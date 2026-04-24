@@ -11,57 +11,59 @@
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--glow); font-family: 'Share Tech Mono', monospace; overflow: hidden; text-transform: uppercase; }
 
         /* LOADING SCREEN */
-        #loader { position: fixed; inset: 0; background: #000; z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 1s; }
-        .loading-circle { width: 100px; height: 100px; border: 2px solid transparent; border-top: 2px solid var(--glow); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        #loader { position: fixed; inset: 0; background: #000; z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.5s; cursor: pointer; }
+        .loading-circle { width: 80px; height: 80px; border: 2px solid transparent; border-top: 2px solid var(--glow); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        #load-msg { font-size: 0.8rem; letter-spacing: 3px; margin-bottom: 10px; height: 20px; text-align: center; width: 80%; }
-        .progress-container { width: 250px; height: 2px; background: rgba(0,242,255,0.1); }
-        #progress-bar { width: 0%; height: 100%; background: var(--glow); box-shadow: 0 0 10px var(--glow); }
+        #load-msg { font-size: 0.7rem; letter-spacing: 2px; margin-bottom: 10px; text-align: center; }
+        .progress-container { width: 200px; height: 2px; background: rgba(0,242,255,0.1); }
+        #progress-bar { width: 0%; height: 100%; background: var(--glow); transition: width 0.1s; }
 
         /* HUD MAIN */
-        .hud { display: none; padding: 30px; box-sizing: border-box; height: 100vh; flex-direction: column; justify-content: center; align-items: center; opacity: 0; transition: opacity 2s; }
-        .hud-container { width: 100%; max-width: 600px; border: 1px solid rgba(0,242,255,0.2); padding: 40px 30px; background: rgba(0,0,0,0.9); position: relative; box-shadow: 0 0 40px rgba(0,242,255,0.1); }
+        #hud { display: none; padding: 20px; box-sizing: border-box; height: 100vh; flex-direction: column; justify-content: center; align-items: center; opacity: 0; transition: opacity 1s; }
+        .hud-container { width: 100%; max-width: 500px; border: 1px solid rgba(0,242,255,0.2); padding: 30px 20px; background: rgba(0,0,0,0.9); position: relative; }
         
-        .main-title { font-size: 2.2rem; text-shadow: 0 0 15px var(--glow); margin-bottom: 5px; letter-spacing: 10px; }
-        .status { font-size: 0.65rem; opacity: 0.6; margin-bottom: 30px; border-bottom: 1px solid rgba(0,242,255,0.2); padding-bottom: 10px; letter-spacing: 2px; }
+        .main-title { font-size: 1.8rem; text-shadow: 0 0 10px var(--glow); margin-bottom: 5px; letter-spacing: 5px; text-align: center; }
+        .status { font-size: 0.6rem; opacity: 0.6; margin-bottom: 25px; border-bottom: 1px solid rgba(0,242,255,0.2); padding-bottom: 10px; text-align: center; }
 
         /* EDITABLE OBJECTIVES */
-        .goal-section { text-align: left; margin-bottom: 30px; border-left: 2px solid var(--glow); padding-left: 20px; }
-        #editable-goals { font-size: 0.85rem; line-height: 1.8; color: #fff; outline: none; }
+        .goal-section { text-align: left; margin-bottom: 25px; border-left: 2px solid var(--glow); padding-left: 15px; }
+        #editable-goals { font-size: 0.8rem; line-height: 1.6; color: #fff; outline: none; min-height: 50px; }
         #editable-goals b { color: var(--glow); }
 
         /* COUNTER */
-        .counter-row { display: flex; justify-content: space-between; margin-bottom: 30px; border-top: 1px solid rgba(0,242,255,0.1); padding-top: 20px; }
+        .counter-row { display: flex; justify-content: space-around; margin-bottom: 20px; border-top: 1px solid rgba(0,242,255,0.1); padding-top: 15px; }
         .unit { text-align: center; }
-        .number { font-size: 2rem; font-weight: bold; display: block; }
-        .label { font-size: 0.55rem; opacity: 0.5; }
+        .number { font-size: 1.5rem; font-weight: bold; display: block; }
+        .label { font-size: 0.5rem; opacity: 0.5; }
 
         /* GRID */
-        .grid { position: fixed; inset: 0; background-image: linear-gradient(rgba(0,242,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,242,255,0.05) 1px, transparent 1px); background-size: 40px 40px; z-index: -1; transform: perspective(500px) rotateX(60deg); animation: move 12s linear infinite; }
-        @keyframes move { from { transform: perspective(500px) rotateX(60deg) translateY(0); } to { transform: perspective(500px) rotateX(60deg) translateY(40px); } }
+        .grid { position: fixed; inset: 0; background-image: linear-gradient(rgba(0,242,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,242,255,0.05) 1px, transparent 1px); background-size: 30px 30px; z-index: -1; transform: perspective(500px) rotateX(60deg); animation: move 12s linear infinite; }
+        @keyframes move { from { transform: translateY(0); } to { transform: translateY(30px); } }
 
-        .footer { font-size: 0.55rem; opacity: 0.3; width: 100%; display: flex; justify-content: space-between; margin-top: 20px; cursor: pointer; }
+        .footer { font-size: 0.5rem; opacity: 0.3; width: 100%; display: flex; justify-content: space-between; margin-top: 15px; }
+        .reset-btn { cursor: pointer; }
+        .reset-btn:hover { opacity: 1; color: red; }
     </style>
 </head>
 <body>
 
-    <div id="loader">
+    <div id="loader" onclick="startApp()">
         <div class="loading-circle"></div>
-        <div id="load-msg">INITIALIZING...</div>
+        <div id="load-msg">CONNECTING...</div>
         <div class="progress-container">
             <div id="progress-bar"></div>
         </div>
+        <div style="font-size: 0.5rem; margin-top: 20px; opacity: 0.3;">[TAP TO BYPASS]</div>
     </div>
 
     <div class="grid"></div>
 
-    <div class="hud" id="hud">
+    <div id="hud">
         <div class="hud-container">
             <div class="main-title">EVOLUTION</div>
-            <div class="status">AGNES OS v1.1 // MASTER_JIN // ASCENSION_PROTOCOL</div>
+            <div class="status">AGNES OS v1.2 // MASTER_JIN</div>
 
             <div class="goal-section">
-                <div style="font-size: 0.5rem; opacity: 0.4; margin-bottom: 10px;">[DEV_OBJECTIVES_ACTIVE]</div>
                 <div id="editable-goals" contenteditable="true">
                     >> RANK: <b>MYTHICAL IMMORTAL [100 STARS]</b><br>
                     >> ACADEMIC: <b>SECURE TOP 1 [GRANDMA'S WISH]</b><br>
@@ -71,51 +73,18 @@
 
             <div class="counter-row">
                 <div class="unit"><span class="number" id="days">00</span><span class="label">DAYS</span></div>
-                <div class="unit"><span class="number" id="hours">00</span><span class="label">HOURS</span></div>
+                <div class="unit"><span class="number" id="hours">00</span><span class="label">HRS</span></div>
                 <div class="unit"><span class="number" id="minutes">00</span><span class="label">MINS</span></div>
                 <div class="unit"><span class="number" id="seconds">00</span><span class="label">SECS</span></div>
             </div>
 
             <div class="footer">
-                <span onclick="resetSystem()">[RESET_SYSTEM_CLOCK]</span>
-                <span>BGC_LINK: ENCRYPTED</span>
+                <span class="reset-btn" onclick="resetSystem()">[RESET_SYSTEM]</span>
+                <span>BGC_HQ_CONNECTED</span>
             </div>
         </div>
     </div>
 
     <script>
-        // LOADING QUOTES
-        const quotes = [
-            "CONNECTING TO BGC MAINFRME...",
-            "JARVIS PROTOTYPE v1.1 LOADING...",
-            "CALIBRATING STEALTH MODULES...",
-            "BYPASSING EMOTIONAL LIMITERS...",
-            "LIFE MIGHT BE STORMY...",
-            "IT CAN'T RAIN FOREVER...",
-            "INITIALIZING BILLIONAIRE_ARC...",
-            "AGNES INDUSTRY CORE ONLINE...",
-            "SCANNING FOR COMPETITION... [NONE FOUND]"
-        ];
-
-        let i = 0;
-        const msgEl = document.getElementById('load-msg');
-        const bar = document.getElementById('progress-bar');
-        
-        const loadInterval = setInterval(() => {
-            msgEl.innerText = quotes[Math.floor(Math.random() * quotes.length)];
-            i += 1;
-            bar.style.width = i + "%";
-            if (i >= 100) {
-                clearInterval(loadInterval);
-                document.getElementById('loader').style.opacity = '0';
-                setTimeout(() => {
-                    document.getElementById('loader').style.display = 'none';
-                    const hud = document.getElementById('hud');
-                    hud.style.display = 'flex';
-                    setTimeout(() => hud.style.opacity = '1', 50);
-                }, 1000);
-            }
-        }, 50);
-
-        // TIMER LOGIC (Starts from first open)
-        if (!localStorage.getItem('arcS 
+        // 1. LOADING LOGIC
+        const quotes = ["INIT
