@@ -3,73 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agnes OS | v2.2</title>
+    <title>Agnes OS | v2.3</title>
     <link rel="manifest" href="manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root { --glow: #00f2ff; --bg: #050505; --red: #ff4d4d; --green: #4dff88; --dark: #001a1a; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--glow); font-family: 'Share Tech Mono', monospace; display: flex; justify-content: center; align-items: center; overflow: hidden; text-transform: uppercase; }
+
+        /* GRID */
         .grid { position: fixed; inset: 0; background-image: linear-gradient(rgba(0,242,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,242,255,0.05) 1px, transparent 1px); background-size: 40px 40px; z-index: -1; transform: perspective(500px) rotateX(60deg); }
 
-        /* LOADER */
+        /* LOADER & MODALS */
         #loader { position: fixed; inset: 0; background: #000; z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.8s; }
         .loading-circle { width: 60px; height: 60px; border: 2px solid rgba(0,242,255,0.1); border-top: 2px solid var(--glow); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+        #directive-box { font-size: 0.7rem; color: #fff; letter-spacing: 2px; text-align: center; max-width: 80%; margin-top: 30px; border: 1px solid var(--glow); padding: 15px; display: none; }
+        #patch-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: none; justify-content: center; align-items: center; padding: 20px; }
+        .patch-box { border: 1px solid var(--glow); background: #000; padding: 25px; max-width: 400px; text-align: center; box-shadow: 0 0 30px rgba(0,242,255,0.2); }
 
-        /* HUD MAIN */
-        #hud { display: none; width: 100%; height: 100%; flex-direction: column; justify-content: center; align-items: center; opacity:0; transition: opacity 1s; padding: 15px; }
-        .container { width: 100%; max-width: 500px; border: 1px solid rgba(0,242,255,0.2); padding: 25px; background: rgba(0,0,0,0.9); box-shadow: 0 0 30px rgba(0,242,255,0.1); position: relative; }
+        /* HUD */
+        #hud { display: none; width: 100%; height: 100%; flex-direction: column; justify-content: center; align-items: center; opacity:0; transition: opacity 1s; padding: 10px; }
+        .container { width: 100%; max-width: 500px; border: 1px solid rgba(0,242,255,0.2); padding: 20px; background: rgba(0,0,0,0.95); position: relative; }
         
         /* TABS */
-        .tabs { display: flex; justify-content: space-around; margin-bottom: 20px; border-bottom: 1px solid rgba(0,242,255,0.1); padding-bottom: 10px; }
-        .tab-btn { cursor: pointer; font-size: 0.6rem; opacity: 0.4; letter-spacing: 1px; }
+        .tabs { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid rgba(0,242,255,0.1); padding-bottom: 8px; overflow-x: auto; }
+        .tab-btn { cursor: pointer; font-size: 0.5rem; opacity: 0.4; letter-spacing: 1px; padding: 0 5px; white-space: nowrap; }
         .tab-btn.active { opacity: 1; color: var(--glow); text-shadow: 0 0 8px var(--glow); }
 
-        /* CONTENT */
-        .content-area { height: 220px; overflow-y: auto; scrollbar-width: none; margin-bottom: 20px; }
+        /* CONTENT AREA */
+        .content-area { height: 240px; overflow-y: auto; scrollbar-width: none; margin-bottom: 15px; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        /* PERSISTENT PACER (THE MIDDLE SECTION) */
-        .persistent-pacer { 
-            display: flex; align-items: center; justify-content: space-between; 
-            padding: 15px 0; border-top: 1px solid rgba(0,242,255,0.1); border-bottom: 1px solid rgba(0,242,255,0.1);
-            margin-bottom: 15px;
-        }
-        .pacer-circle { width: 45px; height: 45px; border: 2px solid var(--glow); border-radius: 50%; animation: breathe 8s ease-in-out infinite; }
+        /* CHAT */
+        #chat-window { height: 180px; overflow-y: auto; border: 1px solid rgba(0,242,255,0.1); padding: 10px; margin-bottom: 10px; font-size: 0.75rem; text-transform: none; }
+        .chat-msg { margin-bottom: 10px; line-height: 1.4; }
+        .msg-reo { color: var(--glow); }
+        .msg-jin { color: #fff; text-align: right; }
+        #chat-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--glow); color: #fff; padding: 8px; font-family: 'Share Tech Mono'; outline: none; font-size: 0.75rem; }
+
+        /* PACER */
+        .persistent-pacer { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-top: 1px solid rgba(0,242,255,0.1); margin-bottom: 10px; }
+        .pacer-circle { width: 40px; height: 40px; border: 2px solid var(--glow); border-radius: 50%; animation: breathe 8s ease-in-out infinite; }
         @keyframes breathe { 0%, 100% { transform: scale(0.8); opacity: 0.3; } 50% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 20px var(--glow); } }
-        .pacer-data { font-size: 0.6rem; letter-spacing: 2px; text-align: right; }
+        .pacer-data { font-size: 0.55rem; letter-spacing: 1px; text-align: right; line-height: 1.4; }
 
-        /* PROGRESS BARS */
-        .obj-group { margin-bottom: 15px; }
-        .obj-header { display: flex; justify-content: space-between; font-size: 0.6rem; margin-bottom: 5px; color: #fff; }
-        .val-edit { border-bottom: 1px dashed var(--glow); outline: none; }
-        .bar-bg { width: 100%; height: 3px; background: var(--dark); border: 1px solid rgba(0,242,255,0.1); }
-        .bar-fill { height: 100%; background: var(--glow); width: 0%; transition: width 1s ease; }
-
-        /* TASK MANAGER */
-        .task-item { display: flex; justify-content: space-between; border-left: 2px solid var(--glow); padding: 8px 10px; margin-bottom: 8px; font-size: 0.75rem; background: rgba(255,255,255,0.02); }
-        .task-done { color: var(--green); cursor: pointer; font-size: 0.6rem; }
-
-        /* LOGS */
-        textarea { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(0,242,255,0.2); color: #fff; font-family: 'Share Tech Mono'; padding: 10px; outline: none; resize: none; height: 50px; font-size: 0.8rem; margin-bottom: 10px; }
-        .log-entry { border: 1px solid rgba(255,255,255,0.05); padding: 10px; margin-bottom: 10px; }
-        .tag-jarvis { padding: 2px 8px; border: 1px solid; font-weight: bold; font-size: 0.45rem; }
-        .tag-stable { color: var(--green); border-color: var(--green); }
-        .tag-critical { color: var(--red); border-color: var(--red); }
-
-        /* TIMER */
-        .timer-row { display: flex; justify-content: space-between; }
-        .number { font-size: 1.4rem; font-weight: bold; color: #fff; text-align: center; }
-        .label { font-size: 0.5rem; opacity: 0.4; text-align: center; display: block; }
+        /* REUSABLE STYLES */
+        .obj-group { margin-bottom: 10px; }
+        .obj-header { display: flex; justify-content: space-between; font-size: 0.55rem; margin-bottom: 4px; color: #fff; }
+        .bar-bg { width: 100%; height: 3px; background: var(--dark); }
+        .bar-fill { height: 100%; background: var(--glow); transition: width 1s ease; }
+        .log-entry { border: 1px solid rgba(255,255,255,0.05); padding: 8px; margin-bottom: 8px; font-size: 0.7rem; }
+        .tag-jarvis { padding: 1px 6px; border: 1px solid; font-weight: bold; font-size: 0.4rem; }
+        .cmd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .cmd-box { border: 1px solid rgba(0,242,255,0.2); padding: 10px; text-align: center; cursor: pointer; font-size: 0.6rem; }
+        .timer-row { display: flex; justify-content: space-between; border-top: 1px solid rgba(0,242,255,0.1); padding-top: 10px; }
+        .number { font-size: 1.2rem; font-weight: bold; color: #fff; text-align: center; }
+        .label { font-size: 0.45rem; opacity: 0.4; display: block; }
     </style>
 </head>
 <body>
 
+    <!-- PATCH MODAL -->
+    <div id="patch-modal">
+        <div class="patch-box">
+            <div style="font-size:1rem; border-bottom:1px solid var(--glow); padding-bottom:10px; margin-bottom:15px;">SYSTEM UPDATE v2.3</div>
+            <div style="font-size:0.7rem; text-align:left; line-height:1.6; color:#fff; margin-bottom:20px;">
+                > RESTORED NEURAL CHAT [REO LIVE]<br>
+                > RESTORED COMMAND CENTER<br>
+                > INTEGRATED TASK & NEURAL LOGS<br>
+                > PERSISTENT VITAL PACER ACTIVE
+            </div>
+            <button onclick="closePatch()" style="background:none; border:1px solid var(--glow); color:var(--glow); padding:10px 20px; font-family:'Share Tech Mono'; cursor:pointer;">[ INITIALIZE_SYNC ]</button>
+        </div>
+    </div>
+
     <div id="loader">
         <div class="loading-circle"></div>
-        <div style="font-size:0.6rem; letter-spacing:3px;">[ SYSTEM_ASCENDING ]</div>
+        <div id="directive-box">[ MASTER DIRECTIVE ]<br><br><span id="directive-text"></span></div>
     </div>
 
     <div class="grid"></div>
@@ -77,13 +89,15 @@
     <div id="hud">
         <div class="container">
             <div class="tabs">
-                <div class="tab-btn active" id="t-obj" onclick="switchTab('objectives')">[ TARGETS ]</div>
-                <div class="tab-btn" id="t-task" onclick="switchTab('tasks')">[ TASK_LOG ]</div>
-                <div class="tab-btn" id="t-log" onclick="switchTab('diary')">[ NEURAL_LOG ]</div>
+                <div class="tab-btn active" id="t-obj" onclick="switchTab('objectives')">TARGETS</div>
+                <div class="tab-btn" id="t-chat" onclick="switchTab('chat')">REO_CHAT</div>
+                <div class="tab-btn" id="t-task" onclick="switchTab('tasks')">TASKS</div>
+                <div class="tab-btn" id="t-log" onclick="switchTab('diary')">LOGS</div>
+                <div class="tab-btn" id="t-cmd" onclick="switchTab('command')">COMMAND</div>
             </div>
 
             <div class="content-area">
-                <!-- OBJECTIVES -->
+                <!-- TARGETS -->
                 <div id="objectives" class="tab-content active">
                     <div class="obj-group">
                         <div class="obj-header"><span>RANK: MYTHICAL IMMORTAL</span> <span><span contenteditable="true" class="val-edit" id="v-rank" oninput="updateBars()">40</span>%</span></div>
@@ -99,39 +113,52 @@
                     </div>
                 </div>
 
-                <!-- TASK MANAGER -->
+                <!-- LIVE CHAT (REO) -->
+                <div id="chat" class="tab-content">
+                    <div id="chat-window"></div>
+                    <input type="text" id="chat-input" placeholder=">> COMMUNICATE..." onkeypress="if(event.key==='Enter')sendChat()">
+                </div>
+
+                <!-- TASKS -->
                 <div id="tasks" class="tab-content">
-                    <input type="text" id="task-input" placeholder=">> ADD_TASK..." style="width:100%; background:none; border:1px solid var(--glow); color:#fff; padding:8px; font-family:'Share Tech Mono'; outline:none; margin-bottom:15px; font-size:0.8rem;" onkeypress="if(event.key==='Enter')addTask()">
+                    <input type="text" id="task-input" placeholder=">> NEW_TASK..." style="width:100%; background:none; border:1px solid var(--glow); color:#fff; padding:8px; font-family:'Share Tech Mono'; outline:none; margin-bottom:10px;" onkeypress="if(event.key==='Enter')addTask()">
                     <div id="task-list"></div>
                 </div>
 
-                <!-- NEURAL LOGS -->
+                <!-- LOGS -->
                 <div id="diary" class="tab-content">
-                    <textarea id="log-input" placeholder=">> RECORD DATA..."></textarea>
-                    <div style="display:flex; gap:10px;">
-                        <button class="tab-btn" style="opacity:1; color:var(--green);" onclick="saveLog('stable')">[ STABLE ]</button>
-                        <button class="tab-btn" style="opacity:1; color:var(--red);" onclick="saveLog('critical')">[ CRITICAL ]</button>
+                    <textarea id="log-input" style="height:40px" placeholder=">> LOG DATA..."></textarea>
+                    <button class="tab-btn" style="opacity:1; color:var(--green);" onclick="saveLog('stable')">[ STABLE ]</button>
+                    <button class="tab-btn" style="opacity:1; color:var(--red);" onclick="saveLog('critical')">[ CRITICAL ]</button>
+                    <div id="log-display" style="margin-top:10px;"></div>
+                </div>
+
+                <!-- COMMAND CENTER -->
+                <div id="command" class="tab-content">
+                    <div class="cmd-grid">
+                        <div class="cmd-box" onclick="window.open('https://open.spotify.com/')">PLAYLIST</div>
+                        <div class="cmd-box" onclick="window.open('https://github.com/')">GITHUB</div>
+                        <div class="cmd-box" onclick="window.open('https://www.f1.com/')">F1_HUB</div>
+                        <div class="cmd-box" onclick="handleMemoryCore()">MEMORY_CORE</div>
                     </div>
-                    <div id="log-display" style="margin-top:15px;"></div>
                 </div>
             </div>
 
-            <!-- PERSISTENT PACER (MIDDLE) -->
+            <!-- PACER -->
             <div class="persistent-pacer">
                 <div class="pacer-circle"></div>
                 <div class="pacer-data">
-                    STATUS: SYNCED<br>
-                    VITAL_PACE: 8.0s<br>
-                    <span style="color:#fff">BYPASSING_LIMITS</span>
+                    STATUS: ASCENDING<br>
+                    MASTER: <span id="master-id" style="color:#fff" onclick="handleMasterClick()">JIN</span>
                 </div>
             </div>
 
             <!-- TIMER -->
             <div class="timer-row">
-                <div><span class="number" id="d">00</span><span class="label">DAYS</span></div>
-                <div><span class="number" id="h">00</span><span class="label">HRS</span></div>
-                <div><span class="number" id="m">00</span><span class="label">MINS</span></div>
-                <div><span class="number" id="s">00</span><span class="label">SECS</span></div>
+                <div class="unit"><span class="number" id="d">00</span><span class="label">DAYS</span></div>
+                <div class="unit"><span class="number" id="h">00</span><span class="label">HRS</span></div>
+                <div class="unit"><span class="number" id="m">00</span><span class="label">MINS</span></div>
+                <div class="unit"><span class="number" id="s">00</span><span class="label">SECS</span></div>
             </div>
         </div>
     </div>
@@ -147,18 +174,57 @@
             osc.start(); osc.stop(audioCtx.currentTime + 0.05);
         }
 
+        // PATCH SYSTEM
+        const version = "2.3";
         window.onload = () => {
+            if(localStorage.getItem('v') !== version) document.getElementById('patch-modal').style.display = 'flex';
+            document.getElementById('directive-text').innerText = "WE DO IT. NO LIMITS. NO EXCUSES.";
+            setTimeout(() => document.getElementById('directive-box').style.display = 'block', 500);
             setTimeout(() => {
                 document.getElementById('loader').style.opacity = '0';
                 setTimeout(() => {
                     document.getElementById('loader').style.display = 'none';
-                    const h = document.getElementById('hud');
-                    h.style.display = 'flex';
-                    setTimeout(() => { h.style.opacity = '1'; updateBars(); }, 50);
+                    document.getElementById('hud').style.display = 'flex';
+                    setTimeout(() => { document.getElementById('hud').style.opacity = '1'; updateBars(); }, 50);
                 }, 800);
-            }, 3000);
+            }, 5000);
         };
+        function closePatch() { localStorage.setItem('v', version); document.getElementById('patch-modal').style.display = 'none'; }
 
+        // TABS
+        function switchTab(id) {
+            blip();
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            document.getElementById('t-' + (id==='objectives'?'obj':id==='chat'?'chat':id==='tasks'?'task':id==='diary'?'log':'cmd')).classList.add('active');
+        }
+
+        // CHAT (REO LIVE)
+        let chatHistory = [];
+        async function sendChat() {
+            const input = document.getElementById('chat-input');
+            const win = document.getElementById('chat-window');
+            const msg = input.value; if(!msg) return;
+            win.innerHTML += `<div class="chat-msg msg-jin">> ${msg}</div>`;
+            input.value = '';
+            win.innerHTML += `<div class="chat-msg msg-reo" id="thinking">REO: Thinking...</div>`;
+            win.scrollTop = win.scrollHeight;
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg, history: chatHistory })
+                });
+                const data = await res.json();
+                document.getElementById('thinking').remove();
+                win.innerHTML += `<div class="chat-msg msg-reo">REO: ${data.reply}</div>`;
+                chatHistory.push({role:"user", parts:[{text:msg}]}, {role:"model", parts:[{text:data.reply}]});
+            } catch(e) { document.getElementById('thinking').innerText = "UPLINK_ERROR"; }
+            win.scrollTop = win.scrollHeight;
+        }
+
+        // OBJECTIVES
         function updateBars() {
             ['rank', 'cap', 'mis'].forEach(id => {
                 let val = document.getElementById('v-'+id).innerText;
@@ -167,58 +233,50 @@
                 localStorage.setItem('val_'+id, val);
             });
         }
-
         ['rank', 'cap', 'mis'].forEach(id => {
             if(localStorage.getItem('val_'+id)) document.getElementById('v-'+id).innerText = localStorage.getItem('val_'+id);
         });
 
+        // TASKS & LOGS
         function addTask() {
             const input = document.getElementById('task-input');
-            if(!input.value) return;
             const tasks = JSON.parse(localStorage.getItem('agnes_tasks') || '[]');
             tasks.push(input.value);
             localStorage.setItem('agnes_tasks', JSON.stringify(tasks));
             input.value = ''; renderTasks(); blip();
         }
-        function deleteTask(idx) {
+        function deleteTask(i) {
             const tasks = JSON.parse(localStorage.getItem('agnes_tasks'));
-            tasks.splice(idx, 1);
+            tasks.splice(i, 1);
             localStorage.setItem('agnes_tasks', JSON.stringify(tasks));
             renderTasks(); blip();
         }
         function renderTasks() {
             const tasks = JSON.parse(localStorage.getItem('agnes_tasks') || '[]');
-            document.getElementById('task-list').innerHTML = tasks.map((t, i) => `
-                <div class="task-item"><span>>> ${t}</span><span class="task-done" onclick="deleteTask(${i})">[DONE]</span></div>
-            `).join('');
+            document.getElementById('task-list').innerHTML = tasks.map((t, i) => `<div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.7rem;"><span>>> ${t}</span><span style="color:var(--green); cursor:pointer" onclick="deleteTask(${i})">[DONE]</span></div>`).join('');
         }
         renderTasks();
 
-        function switchTab(id) {
-            blip();
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            document.getElementById('t-' + (id==='objectives'?'obj':id==='diary'?'log':'task')).classList.add('active');
-        }
-
         function saveLog(tag) {
-            blip();
             const text = document.getElementById('log-input').value;
-            if(!text) return;
             const logs = JSON.parse(localStorage.getItem('agnes_logs') || '[]');
             logs.unshift({ text, tag, time: new Date().toLocaleString() });
             localStorage.setItem('agnes_logs', JSON.stringify(logs));
-            document.getElementById('log-input').value = ''; renderLogs();
+            document.getElementById('log-input').value = ''; renderLogs(); blip();
         }
         function renderLogs() {
             const logs = JSON.parse(localStorage.getItem('agnes_logs') || '[]');
-            document.getElementById('log-display').innerHTML = logs.map(l => `
-                <div class="log-entry"><div class="log-header"><span>[ ${l.time} ]</span><span class="tag-jarvis tag-${l.tag}">${l.tag.toUpperCase()}</span></div><div class="log-body">${l.text}</div></div>
-            `).join('');
+            document.getElementById('log-display').innerHTML = logs.map(l => `<div class="log-entry"><div class="log-header"><span>${l.time}</span><span class="tag-jarvis tag-${l.tag}">${l.tag.toUpperCase()}</span></div><div class="log-body">${l.text}</div></div>`).join('');
         }
         renderLogs();
 
+        // MASTER CLICK (MEMORY CORE)
+        let clicks = 0;
+        function handleMasterClick() {
+            clicks++; if(clicks >= 5) { alert("MEMORY_CORE: JIN IS THE MASTER. REO IS THE SHIELD. WE DO IT."); clicks = 0; }
+        }
+
+        // TIMER
         if(!localStorage.getItem('agnes_start')) localStorage.setItem('agnes_start', Date.now());
         setInterval(() => {
             const diff = Date.now() - localStorage.getItem('agnes_start');
@@ -229,4 +287,4 @@
         }, 1000);
     </script>
 </body>
-</html>
+</html> 
