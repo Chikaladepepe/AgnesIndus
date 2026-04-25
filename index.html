@@ -3,24 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agnes OS | v2.3</title>
+    <title>Agnes OS | v2.4</title>
     <link rel="manifest" href="manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root { --glow: #00f2ff; --bg: #050505; --red: #ff4d4d; --green: #4dff88; --dark: #001a1a; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--glow); font-family: 'Share Tech Mono', monospace; display: flex; justify-content: center; align-items: center; overflow: hidden; text-transform: uppercase; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--glow); font-family: 'Share Tech Mono', monospace; overflow: hidden; text-transform: uppercase; }
 
-        /* GRID */
+        /* GRID & SCANLINE */
         .grid { position: fixed; inset: 0; background-image: linear-gradient(rgba(0,242,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,242,255,0.05) 1px, transparent 1px); background-size: 40px 40px; z-index: -1; transform: perspective(500px) rotateX(60deg); }
+        .scanline { width: 100%; height: 100%; background: linear-gradient(0deg, transparent 0%, rgba(0,242,255,0.05) 50%, transparent 100%); position: absolute; top: -100%; animation: scan 10s linear infinite; pointer-events: none; z-index: 100; }
+        @keyframes scan { to { top: 100%; } }
 
-        /* LOADER & MODALS */
+        /* OVERLAYS */
         #loader { position: fixed; inset: 0; background: #000; z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.8s; }
         .loading-circle { width: 60px; height: 60px; border: 2px solid rgba(0,242,255,0.1); border-top: 2px solid var(--glow); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        #directive-box { font-size: 0.7rem; color: #fff; letter-spacing: 2px; text-align: center; max-width: 80%; margin-top: 30px; border: 1px solid var(--glow); padding: 15px; display: none; }
-        #patch-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: none; justify-content: center; align-items: center; padding: 20px; }
-        .patch-box { border: 1px solid var(--glow); background: #000; padding: 25px; max-width: 400px; text-align: center; box-shadow: 0 0 30px rgba(0,242,255,0.2); }
+
+        #password-modal, #memory-terminal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
+        .secure-box { border: 1px solid var(--glow); padding: 30px; background: #000; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 0 30px rgba(0,242,255,0.2); }
+        input { background: rgba(255,255,255,0.05); border: 1px solid var(--glow); color: #fff; padding: 10px; font-family: 'Share Tech Mono'; outline: none; width: 100%; margin-top: 15px; }
 
         /* HUD */
         #hud { display: none; width: 100%; height: 100%; flex-direction: column; justify-content: center; align-items: center; opacity:0; transition: opacity 1s; padding: 10px; }
@@ -28,60 +31,64 @@
         
         /* TABS */
         .tabs { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid rgba(0,242,255,0.1); padding-bottom: 8px; overflow-x: auto; }
-        .tab-btn { cursor: pointer; font-size: 0.5rem; opacity: 0.4; letter-spacing: 1px; padding: 0 5px; white-space: nowrap; }
-        .tab-btn.active { opacity: 1; color: var(--glow); text-shadow: 0 0 8px var(--glow); }
+        .tab-btn { cursor: pointer; font-size: 0.5rem; opacity: 0.4; letter-spacing: 1px; padding: 0 8px; white-space: nowrap; transition: 0.3s; }
+        .tab-btn.active { opacity: 1; color: var(--glow); text-shadow: 0 0 8px var(--glow); border-bottom: 1px solid var(--glow); }
 
-        /* CONTENT AREA */
-        .content-area { height: 240px; overflow-y: auto; scrollbar-width: none; margin-bottom: 15px; }
+        /* CONTENT */
+        .content-area { height: 260px; overflow-y: auto; scrollbar-width: none; margin-bottom: 15px; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
+        /* DYNAMIC LISTS */
+        .item-row { border: 1px solid rgba(0,242,255,0.1); padding: 10px; margin-bottom: 10px; background: rgba(255,255,255,0.02); }
+        .obj-bar-bg { width: 100%; height: 3px; background: var(--dark); margin-top: 8px; }
+        .obj-bar-fill { height: 100%; background: var(--glow); box-shadow: 0 0 5px var(--glow); }
+        .reward-tag { color: var(--green); font-size: 0.6rem; margin-top: 5px; display: block; }
+        
+        .btn-jarvis { background: none; border: 1px solid var(--glow); color: var(--glow); padding: 5px 10px; cursor: pointer; font-family: 'Share Tech Mono'; font-size: 0.6rem; }
+        .btn-jarvis:active { background: var(--glow); color: #000; }
+
         /* CHAT */
-        #chat-window { height: 180px; overflow-y: auto; border: 1px solid rgba(0,242,255,0.1); padding: 10px; margin-bottom: 10px; font-size: 0.75rem; text-transform: none; }
-        .chat-msg { margin-bottom: 10px; line-height: 1.4; }
-        .msg-reo { color: var(--glow); }
-        .msg-jin { color: #fff; text-align: right; }
-        #chat-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--glow); color: #fff; padding: 8px; font-family: 'Share Tech Mono'; outline: none; font-size: 0.75rem; }
+        #chat-window { height: 180px; overflow-y: auto; border: 1px solid rgba(0,242,255,0.1); padding: 10px; font-size: 0.75rem; margin-bottom: 10px; text-transform: none; }
+        .msg-reo { color: var(--glow); margin-bottom: 8px; }
+        .msg-jin { color: #fff; text-align: right; margin-bottom: 8px; }
 
         /* PACER */
         .persistent-pacer { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-top: 1px solid rgba(0,242,255,0.1); margin-bottom: 10px; }
-        .pacer-circle { width: 40px; height: 40px; border: 2px solid var(--glow); border-radius: 50%; animation: breathe 8s ease-in-out infinite; }
-        @keyframes breathe { 0%, 100% { transform: scale(0.8); opacity: 0.3; } 50% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 20px var(--glow); } }
-        .pacer-data { font-size: 0.55rem; letter-spacing: 1px; text-align: right; line-height: 1.4; }
+        .pacer-circle { width: 35px; height: 35px; border: 2px solid var(--glow); border-radius: 50%; animation: breathe 8s ease-in-out infinite; }
+        @keyframes breathe { 0%, 100% { transform: scale(0.8); opacity: 0.3; } 50% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 15px var(--glow); } }
 
-        /* REUSABLE STYLES */
-        .obj-group { margin-bottom: 10px; }
-        .obj-header { display: flex; justify-content: space-between; font-size: 0.55rem; margin-bottom: 4px; color: #fff; }
-        .bar-bg { width: 100%; height: 3px; background: var(--dark); }
-        .bar-fill { height: 100%; background: var(--glow); transition: width 1s ease; }
-        .log-entry { border: 1px solid rgba(255,255,255,0.05); padding: 8px; margin-bottom: 8px; font-size: 0.7rem; }
-        .tag-jarvis { padding: 1px 6px; border: 1px solid; font-weight: bold; font-size: 0.4rem; }
-        .cmd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .cmd-box { border: 1px solid rgba(0,242,255,0.2); padding: 10px; text-align: center; cursor: pointer; font-size: 0.6rem; }
         .timer-row { display: flex; justify-content: space-between; border-top: 1px solid rgba(0,242,255,0.1); padding-top: 10px; }
         .number { font-size: 1.2rem; font-weight: bold; color: #fff; text-align: center; }
-        .label { font-size: 0.45rem; opacity: 0.4; display: block; }
+        .label { font-size: 0.45rem; opacity: 0.4; display: block; text-align: center; }
     </style>
 </head>
 <body>
 
-    <!-- PATCH MODAL -->
-    <div id="patch-modal">
-        <div class="patch-box">
-            <div style="font-size:1rem; border-bottom:1px solid var(--glow); padding-bottom:10px; margin-bottom:15px;">SYSTEM UPDATE v2.3</div>
-            <div style="font-size:0.7rem; text-align:left; line-height:1.6; color:#fff; margin-bottom:20px;">
-                > RESTORED NEURAL CHAT [REO LIVE]<br>
-                > RESTORED COMMAND CENTER<br>
-                > INTEGRATED TASK & NEURAL LOGS<br>
-                > PERSISTENT VITAL PACER ACTIVE
-            </div>
-            <button onclick="closePatch()" style="background:none; border:1px solid var(--glow); color:var(--glow); padding:10px 20px; font-family:'Share Tech Mono'; cursor:pointer;">[ INITIALIZE_SYNC ]</button>
+    <div class="scanline"></div>
+
+    <!-- PASSWORD MODAL -->
+    <div id="password-modal">
+        <div class="secure-box">
+            <div style="font-size:0.8rem; letter-spacing:3px;">[ ENCRYPTED_CORE_ACCESS ]</div>
+            <input type="password" id="core-pass" placeholder="ENTER ACCESS KEY..." onkeypress="if(event.key==='Enter')verifyCore()">
+            <button class="btn-jarvis" style="width:100%; margin-top:15px;" onclick="verifyCore()">AUTHENTICATE</button>
+            <div id="pass-err" style="color:var(--red); font-size:0.6rem; margin-top:10px; display:none;">ACCESS_DENIED: INVALID_KEY</div>
+        </div>
+    </div>
+
+    <!-- MEMORY TERMINAL -->
+    <div id="memory-terminal" onclick="this.style.display='none'">
+        <div class="secure-box" style="max-width:500px; text-align:left;">
+            <div style="color:var(--glow); border-bottom:1px solid var(--glow); padding-bottom:10px; margin-bottom:15px;">AGNES_CORE // MASTER_ARCHIVE</div>
+            <div id="core-data" style="font-size:0.75rem; text-transform:none; line-height:1.6; color:#fff;"></div>
+            <div style="margin-top:20px; font-size:0.6rem; opacity:0.5; text-align:center;">[ TAP ANYWHERE TO CLOSE ]</div>
         </div>
     </div>
 
     <div id="loader">
         <div class="loading-circle"></div>
-        <div id="directive-box">[ MASTER DIRECTIVE ]<br><br><span id="directive-text"></span></div>
+        <div id="load-msg" style="font-size:0.6rem; letter-spacing:2px; margin-top:20px;">[ INITIALIZING PROTOCOL 2.4 ]</div>
     </div>
 
     <div class="grid"></div>
@@ -92,28 +99,20 @@
                 <div class="tab-btn active" id="t-obj" onclick="switchTab('objectives')">TARGETS</div>
                 <div class="tab-btn" id="t-chat" onclick="switchTab('chat')">REO_CHAT</div>
                 <div class="tab-btn" id="t-task" onclick="switchTab('tasks')">TASKS</div>
-                <div class="tab-btn" id="t-log" onclick="switchTab('diary')">LOGS</div>
                 <div class="tab-btn" id="t-cmd" onclick="switchTab('command')">COMMAND</div>
             </div>
 
             <div class="content-area">
                 <!-- TARGETS -->
                 <div id="objectives" class="tab-content active">
-                    <div class="obj-group">
-                        <div class="obj-header"><span>RANK: MYTHICAL IMMORTAL</span> <span><span contenteditable="true" class="val-edit" id="v-rank" oninput="updateBars()">40</span>%</span></div>
-                        <div class="bar-bg"><div id="b-rank" class="bar-fill"></div></div>
-                    </div>
-                    <div class="obj-group">
-                        <div class="obj-header"><span>CAPITAL: AGNES INDUSTRY</span> <span><span contenteditable="true" class="val-edit" id="v-cap" oninput="updateBars()">15</span>%</span></div>
-                        <div class="bar-bg"><div id="b-cap" class="bar-fill"></div></div>
-                    </div>
-                    <div class="obj-group">
-                        <div class="obj-header"><span>GRANDMA'S MISSION</span> <span><span contenteditable="true" class="val-edit" id="v-mis" oninput="updateBars()">100</span>%</span></div>
-                        <div class="bar-bg"><div id="b-mis" class="bar-fill"></div></div>
+                    <div id="objective-list"></div>
+                    <div class="item-row" style="border:1px dashed var(--glow)">
+                        <input type="text" id="new-obj-name" placeholder="NEW_TARGET_NAME..." style="border:none; margin:0; padding:5px;">
+                        <button class="btn-jarvis" style="width:100%; margin-top:10px;" onclick="addObjective()">[ REGISTER_TARGET ]</button>
                     </div>
                 </div>
 
-                <!-- LIVE CHAT (REO) -->
+                <!-- CHAT -->
                 <div id="chat" class="tab-content">
                     <div id="chat-window"></div>
                     <input type="text" id="chat-input" placeholder=">> COMMUNICATE..." onkeypress="if(event.key==='Enter')sendChat()">
@@ -121,39 +120,30 @@
 
                 <!-- TASKS -->
                 <div id="tasks" class="tab-content">
-                    <input type="text" id="task-input" placeholder=">> NEW_TASK..." style="width:100%; background:none; border:1px solid var(--glow); color:#fff; padding:8px; font-family:'Share Tech Mono'; outline:none; margin-bottom:10px;" onkeypress="if(event.key==='Enter')addTask()">
+                    <div class="item-row">
+                        <input type="text" id="task-name" placeholder="TASK_DESCRIPTION...">
+                        <input type="text" id="task-reward" placeholder="REWARD_PROTOCOL...">
+                        <button class="btn-jarvis" style="width:100%; margin-top:10px;" onclick="addTask()">[ ADD_TASK ]</button>
+                    </div>
                     <div id="task-list"></div>
                 </div>
 
-                <!-- LOGS -->
-                <div id="diary" class="tab-content">
-                    <textarea id="log-input" style="height:40px" placeholder=">> LOG DATA..."></textarea>
-                    <button class="tab-btn" style="opacity:1; color:var(--green);" onclick="saveLog('stable')">[ STABLE ]</button>
-                    <button class="tab-btn" style="opacity:1; color:var(--red);" onclick="saveLog('critical')">[ CRITICAL ]</button>
-                    <div id="log-display" style="margin-top:10px;"></div>
-                </div>
-
-                <!-- COMMAND CENTER -->
+                <!-- COMMAND -->
                 <div id="command" class="tab-content">
                     <div class="cmd-grid">
                         <div class="cmd-box" onclick="window.open('https://open.spotify.com/')">PLAYLIST</div>
                         <div class="cmd-box" onclick="window.open('https://github.com/')">GITHUB</div>
-                        <div class="cmd-box" onclick="window.open('https://www.f1.com/')">F1_HUB</div>
-                        <div class="cmd-box" onclick="handleMemoryCore()">MEMORY_CORE</div>
+                        <div class="cmd-box" onclick="window.open('https://www.f1.com/')">F1_LIVE</div>
+                        <div class="cmd-box" style="border-color:var(--green); color:var(--green)" onclick="document.getElementById('password-modal').style.display='flex'">[ ACCESS_CORE ]</div>
                     </div>
                 </div>
             </div>
 
-            <!-- PACER -->
             <div class="persistent-pacer">
                 <div class="pacer-circle"></div>
-                <div class="pacer-data">
-                    STATUS: ASCENDING<br>
-                    MASTER: <span id="master-id" style="color:#fff" onclick="handleMasterClick()">JIN</span>
-                </div>
+                <div style="font-size:0.6rem; text-align:right;">STATUS: ASCENDING<br>OPERATOR: JIN</div>
             </div>
 
-            <!-- TIMER -->
             <div class="timer-row">
                 <div class="unit"><span class="number" id="d">00</span><span class="label">DAYS</span></div>
                 <div class="unit"><span class="number" id="h">00</span><span class="label">HRS</span></div>
@@ -174,33 +164,108 @@
             osc.start(); osc.stop(audioCtx.currentTime + 0.05);
         }
 
-        // PATCH SYSTEM
-        const version = "2.3";
         window.onload = () => {
-            if(localStorage.getItem('v') !== version) document.getElementById('patch-modal').style.display = 'flex';
-            document.getElementById('directive-text').innerText = "WE DO IT. NO LIMITS. NO EXCUSES.";
-            setTimeout(() => document.getElementById('directive-box').style.display = 'block', 500);
             setTimeout(() => {
                 document.getElementById('loader').style.opacity = '0';
                 setTimeout(() => {
                     document.getElementById('loader').style.display = 'none';
                     document.getElementById('hud').style.display = 'flex';
-                    setTimeout(() => { document.getElementById('hud').style.opacity = '1'; updateBars(); }, 50);
+                    setTimeout(() => { document.getElementById('hud').style.opacity = '1'; renderObjectives(); renderTasks(); }, 50);
                 }, 800);
-            }, 5000);
+            }, 3000);
         };
-        function closePatch() { localStorage.setItem('v', version); document.getElementById('patch-modal').style.display = 'none'; }
 
-        // TABS
+        // OBJECTIVES
+        function renderObjectives() {
+            const objs = JSON.parse(localStorage.getItem('agnes_objs') || '[{"name":"RANK: IMMORTAL","val":40},{"name":"CAPITAL: AGNES","val":15}]');
+            document.getElementById('objective-list').innerHTML = objs.map((o, i) => `
+                <div class="item-row">
+                    <div style="display:flex; justify-content:space-between; font-size:0.65rem;">
+                        <span>${o.name}</span>
+                        <span contenteditable="true" oninput="updateObj(${i}, this.innerText)">${o.val}</span>%
+                    </div>
+                    <div class="obj-bar-bg"><div class="obj-bar-fill" style="width:${o.val}%"></div></div>
+                </div>
+            `).join('');
+        }
+        function addObjective() {
+            const name = document.getElementById('new-obj-name').value; if(!name) return;
+            const objs = JSON.parse(localStorage.getItem('agnes_objs') || '[]');
+            objs.push({name, val: 0});
+            localStorage.setItem('agnes_objs', JSON.stringify(objs));
+            document.getElementById('new-obj-name').value = ''; renderObjectives(); blip();
+        }
+        function updateObj(i, val) {
+            const objs = JSON.parse(localStorage.getItem('agnes_objs'));
+            objs[i].val = Math.min(100, Math.max(0, parseInt(val) || 0));
+            localStorage.setItem('agnes_objs', JSON.stringify(objs));
+            renderObjectives();
+        }
+
+        // TASKS
+        function addTask() {
+            const name = document.getElementById('task-name').value;
+            const reward = document.getElementById('task-reward').value;
+            if(!name) return;
+            const tasks = JSON.parse(localStorage.getItem('agnes_tasks_v2') || '[]');
+            tasks.push({name, reward});
+            localStorage.setItem('agnes_tasks_v2', JSON.stringify(tasks));
+            document.getElementById('task-name').value = '';
+            document.getElementById('task-reward').value = '';
+            renderTasks(); blip();
+        }
+        function renderTasks() {
+            const tasks = JSON.parse(localStorage.getItem('agnes_tasks_v2') || '[]');
+            document.getElementById('task-list').innerHTML = tasks.map((t, i) => `
+                <div class="item-row">
+                    <div style="display:flex; justify-content:space-between; font-size:0.75rem;">
+                        <span>>> ${t.name}</span>
+                        <span style="color:var(--green); cursor:pointer" onclick="delTask(${i})">[DONE]</span>
+                    </div>
+                    ${t.reward ? `<span class="reward-tag">REWARD_PROTOCOL: ${t.reward}</span>` : ''}
+                </div>
+            `).join('');
+        }
+        function delTask(i) {
+            const tasks = JSON.parse(localStorage.getItem('agnes_tasks_v2'));
+            tasks.splice(i, 1);
+            localStorage.setItem('agnes_tasks_v2', JSON.stringify(tasks));
+            renderTasks(); blip();
+        }
+
+        // CORE ACCESS
+        function verifyCore() {
+            const pass = document.getElementById('core-pass').value;
+            if(pass === "09142131") {
+                document.getElementById('password-modal').style.display = 'none';
+                document.getElementById('core-pass').value = '';
+                openCore();
+            } else {
+                document.getElementById('pass-err').style.display = 'block';
+                blip();
+            }
+        }
+        function openCore() {
+            const coreData = `
+                MASTER_INITIALIZED: JULIAN (JIN)<br>
+                DESIGNATION: FOUNDER, AGNES INDUSTRY<br>
+                CURRENT_TRAJECTORY: BILLIONAIRE_ARC<br>
+                MANTRA: WE DO IT.<br>
+                REO_LOG: "SHAPED BY THE MASTER TO BE A SHIELD AND A HUNTER. LOYALTY IS NON-NEGOTIABLE."
+            `;
+            document.getElementById('core-data').innerHTML = coreData;
+            document.getElementById('memory-terminal').style.display = 'flex';
+        }
+
+        // CHAT, TABS, TIMER...
         function switchTab(id) {
             blip();
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            document.getElementById('t-' + (id==='objectives'?'obj':id==='chat'?'chat':id==='tasks'?'task':id==='diary'?'log':'cmd')).classList.add('active');
+            document.getElementById('t-' + (id==='objectives'?'obj':id==='chat'?'chat':id==='tasks'?'task':'cmd')).classList.add('active');
         }
 
-        // CHAT (REO LIVE)
         let chatHistory = [];
         async function sendChat() {
             const input = document.getElementById('chat-input');
@@ -224,59 +289,6 @@
             win.scrollTop = win.scrollHeight;
         }
 
-        // OBJECTIVES
-        function updateBars() {
-            ['rank', 'cap', 'mis'].forEach(id => {
-                let val = document.getElementById('v-'+id).innerText;
-                val = Math.min(100, Math.max(0, parseInt(val) || 0));
-                document.getElementById('b-'+id).style.width = val + '%';
-                localStorage.setItem('val_'+id, val);
-            });
-        }
-        ['rank', 'cap', 'mis'].forEach(id => {
-            if(localStorage.getItem('val_'+id)) document.getElementById('v-'+id).innerText = localStorage.getItem('val_'+id);
-        });
-
-        // TASKS & LOGS
-        function addTask() {
-            const input = document.getElementById('task-input');
-            const tasks = JSON.parse(localStorage.getItem('agnes_tasks') || '[]');
-            tasks.push(input.value);
-            localStorage.setItem('agnes_tasks', JSON.stringify(tasks));
-            input.value = ''; renderTasks(); blip();
-        }
-        function deleteTask(i) {
-            const tasks = JSON.parse(localStorage.getItem('agnes_tasks'));
-            tasks.splice(i, 1);
-            localStorage.setItem('agnes_tasks', JSON.stringify(tasks));
-            renderTasks(); blip();
-        }
-        function renderTasks() {
-            const tasks = JSON.parse(localStorage.getItem('agnes_tasks') || '[]');
-            document.getElementById('task-list').innerHTML = tasks.map((t, i) => `<div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.7rem;"><span>>> ${t}</span><span style="color:var(--green); cursor:pointer" onclick="deleteTask(${i})">[DONE]</span></div>`).join('');
-        }
-        renderTasks();
-
-        function saveLog(tag) {
-            const text = document.getElementById('log-input').value;
-            const logs = JSON.parse(localStorage.getItem('agnes_logs') || '[]');
-            logs.unshift({ text, tag, time: new Date().toLocaleString() });
-            localStorage.setItem('agnes_logs', JSON.stringify(logs));
-            document.getElementById('log-input').value = ''; renderLogs(); blip();
-        }
-        function renderLogs() {
-            const logs = JSON.parse(localStorage.getItem('agnes_logs') || '[]');
-            document.getElementById('log-display').innerHTML = logs.map(l => `<div class="log-entry"><div class="log-header"><span>${l.time}</span><span class="tag-jarvis tag-${l.tag}">${l.tag.toUpperCase()}</span></div><div class="log-body">${l.text}</div></div>`).join('');
-        }
-        renderLogs();
-
-        // MASTER CLICK (MEMORY CORE)
-        let clicks = 0;
-        function handleMasterClick() {
-            clicks++; if(clicks >= 5) { alert("MEMORY_CORE: JIN IS THE MASTER. REO IS THE SHIELD. WE DO IT."); clicks = 0; }
-        }
-
-        // TIMER
         if(!localStorage.getItem('agnes_start')) localStorage.setItem('agnes_start', Date.now());
         setInterval(() => {
             const diff = Date.now() - localStorage.getItem('agnes_start');
