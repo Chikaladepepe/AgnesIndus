@@ -3,149 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agnes OS | v2.0</title>
+    <title>Agnes OS | v2.2</title>
     <link rel="manifest" href="manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root { --glow: #00f2ff; --bg: #050505; --red: #ff4d4d; --green: #4dff88; --dark: #001a1a; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        body, html { 
-            margin: 0; padding: 0; width: 100%; height: 100%; 
-            background: var(--bg); color: var(--glow); 
-            font-family: 'Share Tech Mono', monospace; 
-            display: flex; justify-content: center; align-items: center;
-            overflow: hidden; text-transform: uppercase; 
-        }
-
-        /* GRID BACKGROUND */
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--glow); font-family: 'Share Tech Mono', monospace; display: flex; justify-content: center; align-items: center; overflow: hidden; text-transform: uppercase; }
         .grid { position: fixed; inset: 0; background-image: linear-gradient(rgba(0,242,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,242,255,0.05) 1px, transparent 1px); background-size: 40px 40px; z-index: -1; transform: perspective(500px) rotateX(60deg); }
 
         /* LOADER */
         #loader { position: fixed; inset: 0; background: #000; z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.8s; }
         .loading-circle { width: 60px; height: 60px; border: 2px solid rgba(0,242,255,0.1); border-top: 2px solid var(--glow); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        #directive-box { font-size: 0.7rem; color: #fff; letter-spacing: 2px; text-align: center; max-width: 80%; margin-top: 30px; border: 1px solid var(--glow); padding: 15px; display: none; }
 
-        /* HUD MAIN CONTAINER */
+        /* HUD MAIN */
         #hud { display: none; width: 100%; height: 100%; flex-direction: column; justify-content: center; align-items: center; opacity:0; transition: opacity 1s; padding: 15px; }
-        .container { 
-            width: 100%; max-width: 500px; 
-            border: 1px solid rgba(0,242,255,0.2); 
-            padding: 25px; background: rgba(0,0,0,0.9); 
-            box-shadow: 0 0 30px rgba(0,242,255,0.1);
-            position: relative;
-        }
-
+        .container { width: 100%; max-width: 500px; border: 1px solid rgba(0,242,255,0.2); padding: 25px; background: rgba(0,0,0,0.9); box-shadow: 0 0 30px rgba(0,242,255,0.1); position: relative; }
+        
         /* TABS */
         .tabs { display: flex; justify-content: space-around; margin-bottom: 20px; border-bottom: 1px solid rgba(0,242,255,0.1); padding-bottom: 10px; }
-        .tab-btn { cursor: pointer; font-size: 0.6rem; opacity: 0.4; transition: 0.3s; letter-spacing: 1px; }
+        .tab-btn { cursor: pointer; font-size: 0.6rem; opacity: 0.4; letter-spacing: 1px; }
         .tab-btn.active { opacity: 1; color: var(--glow); text-shadow: 0 0 8px var(--glow); }
 
         /* CONTENT */
-        .content-area { height: 280px; overflow-y: auto; scrollbar-width: none; margin-bottom: 15px; }
+        .content-area { height: 220px; overflow-y: auto; scrollbar-width: none; margin-bottom: 20px; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        /* OBJECTIVES */
+        /* PERSISTENT PACER (THE MIDDLE SECTION) */
+        .persistent-pacer { 
+            display: flex; align-items: center; justify-content: space-between; 
+            padding: 15px 0; border-top: 1px solid rgba(0,242,255,0.1); border-bottom: 1px solid rgba(0,242,255,0.1);
+            margin-bottom: 15px;
+        }
+        .pacer-circle { width: 45px; height: 45px; border: 2px solid var(--glow); border-radius: 50%; animation: breathe 8s ease-in-out infinite; }
+        @keyframes breathe { 0%, 100% { transform: scale(0.8); opacity: 0.3; } 50% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 20px var(--glow); } }
+        .pacer-data { font-size: 0.6rem; letter-spacing: 2px; text-align: right; }
+
+        /* PROGRESS BARS */
         .obj-group { margin-bottom: 15px; }
-        .obj-header { display: flex; justify-content: space-between; font-size: 0.65rem; margin-bottom: 5px; color: #fff; }
-        .bar-bg { width: 100%; height: 4px; background: var(--dark); border: 1px solid rgba(0,242,255,0.2); }
-        .bar-fill { height: 100%; background: var(--glow); width: 0%; transition: width 2s ease; box-shadow: 0 0 8px var(--glow); }
+        .obj-header { display: flex; justify-content: space-between; font-size: 0.6rem; margin-bottom: 5px; color: #fff; }
+        .val-edit { border-bottom: 1px dashed var(--glow); outline: none; }
+        .bar-bg { width: 100%; height: 3px; background: var(--dark); border: 1px solid rgba(0,242,255,0.1); }
+        .bar-fill { height: 100%; background: var(--glow); width: 0%; transition: width 1s ease; }
 
-        /* NEURAL LOG - JARVIS STYLE */
-        textarea { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(0,242,255,0.2); color: #fff; font-family: 'Share Tech Mono'; padding: 10px; outline: none; resize: none; height: 60px; font-size: 0.8rem; margin-bottom: 10px; text-transform: none; }
-        .log-entry { border: 1px solid rgba(255,255,255,0.05); padding: 10px; margin-bottom: 10px; background: rgba(255,255,255,0.01); }
-        .log-header { display: flex; justify-content: space-between; font-size: 0.55rem; margin-bottom: 8px; opacity: 0.7; }
-        
-        /* THE FIXED JARVIS TAGS */
-        .tag-jarvis { padding: 2px 8px; border: 1px solid; font-weight: bold; font-size: 0.5rem; letter-spacing: 1px; }
-        .tag-stable { color: var(--green); border-color: var(--green); box-shadow: 0 0 5px var(--green); }
-        .tag-critical { color: var(--red); border-color: var(--red); box-shadow: 0 0 5px var(--red); }
-        
-        .log-body { font-size: 0.8rem; color: #eee; text-transform: none; line-height: 1.4; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 5px; }
+        /* TASK MANAGER */
+        .task-item { display: flex; justify-content: space-between; border-left: 2px solid var(--glow); padding: 8px 10px; margin-bottom: 8px; font-size: 0.75rem; background: rgba(255,255,255,0.02); }
+        .task-done { color: var(--green); cursor: pointer; font-size: 0.6rem; }
 
-        /* COMMAND GRID */
-        .cmd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .cmd-box { border: 1px solid rgba(0,242,255,0.2); padding: 15px; text-align: center; cursor: pointer; }
-        .cmd-box:active { background: var(--dark); border-color: var(--glow); }
-        .cmd-name { font-size: 0.6rem; opacity: 0.5; margin-top: 5px; display: block; }
+        /* LOGS */
+        textarea { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(0,242,255,0.2); color: #fff; font-family: 'Share Tech Mono'; padding: 10px; outline: none; resize: none; height: 50px; font-size: 0.8rem; margin-bottom: 10px; }
+        .log-entry { border: 1px solid rgba(255,255,255,0.05); padding: 10px; margin-bottom: 10px; }
+        .tag-jarvis { padding: 2px 8px; border: 1px solid; font-weight: bold; font-size: 0.45rem; }
+        .tag-stable { color: var(--green); border-color: var(--green); }
+        .tag-critical { color: var(--red); border-color: var(--red); }
 
         /* TIMER */
-        .timer-row { display: flex; justify-content: space-between; border-top: 1px solid rgba(0,242,255,0.1); padding-top: 15px; }
+        .timer-row { display: flex; justify-content: space-between; }
         .number { font-size: 1.4rem; font-weight: bold; color: #fff; text-align: center; }
         .label { font-size: 0.5rem; opacity: 0.4; text-align: center; display: block; }
-
-        /* SCANLINE */
-        .scanline { width: 100%; height: 2px; background: rgba(0,242,255,0.03); position: absolute; top: 0; left: 0; animation: scan 6s linear infinite; pointer-events: none; }
-        @keyframes scan { from { top: 0; } to { top: 100%; } }
     </style>
 </head>
 <body>
 
     <div id="loader">
         <div class="loading-circle"></div>
-        <div id="directive-box">[ MASTER DIRECTIVE ]<br><br><span id="directive-text"></span></div>
+        <div style="font-size:0.6rem; letter-spacing:3px;">[ SYSTEM_ASCENDING ]</div>
     </div>
 
     <div class="grid"></div>
 
     <div id="hud">
         <div class="container">
-            <div class="scanline"></div>
-            
             <div class="tabs">
                 <div class="tab-btn active" id="t-obj" onclick="switchTab('objectives')">[ TARGETS ]</div>
+                <div class="tab-btn" id="t-task" onclick="switchTab('tasks')">[ TASK_LOG ]</div>
                 <div class="tab-btn" id="t-log" onclick="switchTab('diary')">[ NEURAL_LOG ]</div>
-                <div class="tab-btn" id="t-cmd" onclick="switchTab('command')">[ COMMAND ]</div>
             </div>
 
             <div class="content-area">
-                <!-- TAB: OBJECTIVES -->
+                <!-- OBJECTIVES -->
                 <div id="objectives" class="tab-content active">
                     <div class="obj-group">
-                        <div class="obj-header"><span>RANK: MYTHICAL IMMORTAL</span> <span id="v-rank">40%</span></div>
+                        <div class="obj-header"><span>RANK: MYTHICAL IMMORTAL</span> <span><span contenteditable="true" class="val-edit" id="v-rank" oninput="updateBars()">40</span>%</span></div>
                         <div class="bar-bg"><div id="b-rank" class="bar-fill"></div></div>
                     </div>
                     <div class="obj-group">
-                        <div class="obj-header"><span>CAPITAL: AGNES INDUSTRY</span> <span id="v-cap">15%</span></div>
+                        <div class="obj-header"><span>CAPITAL: AGNES INDUSTRY</span> <span><span contenteditable="true" class="val-edit" id="v-cap" oninput="updateBars()">15</span>%</span></div>
                         <div class="bar-bg"><div id="b-cap" class="bar-fill"></div></div>
                     </div>
                     <div class="obj-group">
-                        <div class="obj-header"><span>GRANDMA'S MISSION</span> <span id="v-mis">100%</span></div>
+                        <div class="obj-header"><span>GRANDMA'S MISSION</span> <span><span contenteditable="true" class="val-edit" id="v-mis" oninput="updateBars()">100</span>%</span></div>
                         <div class="bar-bg"><div id="b-mis" class="bar-fill"></div></div>
                     </div>
                 </div>
 
-                <!-- TAB: LOGS -->
-                <div id="diary" class="tab-content">
-                    <textarea id="log-input" placeholder=">> START TYPING..."></textarea>
-                    <div style="display:flex; gap:10px;">
-                        <button class="tab-btn" style="opacity:1; color:var(--green);" onclick="saveLog('stable')">[ MARK_STABLE ]</button>
-                        <button class="tab-btn" style="opacity:1; color:var(--red);" onclick="saveLog('critical')">[ MARK_CRITICAL ]</button>
-                    </div>
-                    <div id="log-display" style="margin-top:20px;"></div>
+                <!-- TASK MANAGER -->
+                <div id="tasks" class="tab-content">
+                    <input type="text" id="task-input" placeholder=">> ADD_TASK..." style="width:100%; background:none; border:1px solid var(--glow); color:#fff; padding:8px; font-family:'Share Tech Mono'; outline:none; margin-bottom:15px; font-size:0.8rem;" onkeypress="if(event.key==='Enter')addTask()">
+                    <div id="task-list"></div>
                 </div>
 
-                <!-- TAB: COMMAND -->
-                <div id="command" class="tab-content">
-                    <div class="cmd-grid">
-                        <div class="cmd-box" onclick="window.open('https://open.spotify.com/','_blank')">
-                            <span>🎵</span><span class="cmd-name">VIBE_FEED</span>
-                        </div>
-                        <div class="cmd-box" onclick="window.open('https://github.com/','_blank')">
-                            <span>💻</span><span class="cmd-name">CORE_REPO</span>
-                        </div>
-                        <div class="cmd-box" onclick="window.open('https://www.f1.com/','_blank')">
-                            <span>🏎️</span><span class="cmd-name">F1_TELEMETRY</span>
-                        </div>
-                        <div class="cmd-box" onclick="alert('Master Access Only')">
-                            <span>🛡️</span><span class="cmd-name">MEMORY_CORE</span>
-                        </div>
+                <!-- NEURAL LOGS -->
+                <div id="diary" class="tab-content">
+                    <textarea id="log-input" placeholder=">> RECORD DATA..."></textarea>
+                    <div style="display:flex; gap:10px;">
+                        <button class="tab-btn" style="opacity:1; color:var(--green);" onclick="saveLog('stable')">[ STABLE ]</button>
+                        <button class="tab-btn" style="opacity:1; color:var(--red);" onclick="saveLog('critical')">[ CRITICAL ]</button>
                     </div>
+                    <div id="log-display" style="margin-top:15px;"></div>
                 </div>
             </div>
 
+            <!-- PERSISTENT PACER (MIDDLE) -->
+            <div class="persistent-pacer">
+                <div class="pacer-circle"></div>
+                <div class="pacer-data">
+                    STATUS: SYNCED<br>
+                    VITAL_PACE: 8.0s<br>
+                    <span style="color:#fff">BYPASSING_LIMITS</span>
+                </div>
+            </div>
+
+            <!-- TIMER -->
             <div class="timer-row">
                 <div><span class="number" id="d">00</span><span class="label">DAYS</span></div>
                 <div><span class="number" id="h">00</span><span class="label">HRS</span></div>
@@ -156,52 +137,71 @@
     </div>
 
     <script>
-        // SOUND
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function blip() {
             const osc = audioCtx.createOscillator();
             const g = audioCtx.createGain();
-            osc.type = 'sine'; osc.frequency.setValueAtTime(900, audioCtx.currentTime);
-            g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            g.gain.setValueAtTime(0.01, audioCtx.currentTime);
             osc.connect(g); g.connect(audioCtx.destination);
             osc.start(); osc.stop(audioCtx.currentTime + 0.05);
         }
 
-        // LOADING
-        const quotes = ["LIFE MIGHT BE STORMY, BUT IT CAN'T RAIN FOREVER.", "WE DO IT. NO LIMITS.", "THINK 2 STEPS AHEAD.", "YOU LOST MY MASTER ONCE, I WILL NOT LET YOU LOSE HIM TWICE."];
         window.onload = () => {
-            document.getElementById('directive-text').innerText = quotes[Math.floor(Math.random() * quotes.length)];
-            setTimeout(() => document.getElementById('directive-box').style.display = 'block', 500);
             setTimeout(() => {
                 document.getElementById('loader').style.opacity = '0';
                 setTimeout(() => {
                     document.getElementById('loader').style.display = 'none';
                     const h = document.getElementById('hud');
                     h.style.display = 'flex';
-                    setTimeout(() => { h.opacity = '1'; h.style.opacity = '1'; updateBars(); }, 50);
+                    setTimeout(() => { h.style.opacity = '1'; updateBars(); }, 50);
                 }, 800);
-            }, 5000);
+            }, 3000);
         };
 
-        // BARS
         function updateBars() {
-            const vals = { rank: 40, cap: 15, mis: 100 };
-            for(let k in vals) {
-                document.getElementById('b-'+k).style.width = vals[k] + '%';
-                document.getElementById('v-'+k).innerText = vals[k] + '%';
-            }
+            ['rank', 'cap', 'mis'].forEach(id => {
+                let val = document.getElementById('v-'+id).innerText;
+                val = Math.min(100, Math.max(0, parseInt(val) || 0));
+                document.getElementById('b-'+id).style.width = val + '%';
+                localStorage.setItem('val_'+id, val);
+            });
         }
 
-        // TABS
+        ['rank', 'cap', 'mis'].forEach(id => {
+            if(localStorage.getItem('val_'+id)) document.getElementById('v-'+id).innerText = localStorage.getItem('val_'+id);
+        });
+
+        function addTask() {
+            const input = document.getElementById('task-input');
+            if(!input.value) return;
+            const tasks = JSON.parse(localStorage.getItem('agnes_tasks') || '[]');
+            tasks.push(input.value);
+            localStorage.setItem('agnes_tasks', JSON.stringify(tasks));
+            input.value = ''; renderTasks(); blip();
+        }
+        function deleteTask(idx) {
+            const tasks = JSON.parse(localStorage.getItem('agnes_tasks'));
+            tasks.splice(idx, 1);
+            localStorage.setItem('agnes_tasks', JSON.stringify(tasks));
+            renderTasks(); blip();
+        }
+        function renderTasks() {
+            const tasks = JSON.parse(localStorage.getItem('agnes_tasks') || '[]');
+            document.getElementById('task-list').innerHTML = tasks.map((t, i) => `
+                <div class="task-item"><span>>> ${t}</span><span class="task-done" onclick="deleteTask(${i})">[DONE]</span></div>
+            `).join('');
+        }
+        renderTasks();
+
         function switchTab(id) {
             blip();
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            document.getElementById('t-' + (id==='objectives'?'obj':id==='diary'?'log':'cmd')).classList.add('active');
+            document.getElementById('t-' + (id==='objectives'?'obj':id==='diary'?'log':'task')).classList.add('active');
         }
 
-        // LOGS
         function saveLog(tag) {
             blip();
             const text = document.getElementById('log-input').value;
@@ -209,25 +209,16 @@
             const logs = JSON.parse(localStorage.getItem('agnes_logs') || '[]');
             logs.unshift({ text, tag, time: new Date().toLocaleString() });
             localStorage.setItem('agnes_logs', JSON.stringify(logs));
-            document.getElementById('log-input').value = '';
-            renderLogs();
+            document.getElementById('log-input').value = ''; renderLogs();
         }
-
         function renderLogs() {
             const logs = JSON.parse(localStorage.getItem('agnes_logs') || '[]');
             document.getElementById('log-display').innerHTML = logs.map(l => `
-                <div class="log-entry">
-                    <div class="log-header">
-                        <span>[ ${l.time} ]</span>
-                        <span class="tag-jarvis tag-${l.tag}">${l.tag.toUpperCase()}</span>
-                    </div>
-                    <div class="log-body">${l.text}</div>
-                </div>
+                <div class="log-entry"><div class="log-header"><span>[ ${l.time} ]</span><span class="tag-jarvis tag-${l.tag}">${l.tag.toUpperCase()}</span></div><div class="log-body">${l.text}</div></div>
             `).join('');
         }
         renderLogs();
 
-        // TIMER
         if(!localStorage.getItem('agnes_start')) localStorage.setItem('agnes_start', Date.now());
         setInterval(() => {
             const diff = Date.now() - localStorage.getItem('agnes_start');
@@ -238,4 +229,4 @@
         }, 1000);
     </script>
 </body>
-    </html>
+</html>
