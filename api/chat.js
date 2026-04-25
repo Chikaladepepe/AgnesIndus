@@ -2,19 +2,24 @@ export default async function handler(req, res) {
   const API_KEY = process.env.GEMINI_API_KEY;
   
   if (!API_KEY) {
-    return res.status(500).json({ reply: "ERROR: API_KEY_NOT_FOUND. Ensure GEMINI_API_KEY is set in Vercel and redeployed." });
+    return res.status(500).json({ reply: "ERROR: API_KEY_NOT_FOUND. Check Vercel settings." });
   }
 
   const { message, history } = req.body;
 
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+    // UPDATED URL: Changed v1beta to v1 and ensured model name is correct
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [...history, { role: "user", parts: [{ text: message }] }],
-        systemInstruction: {
-          parts: [{ text: "You are REO, the high-tech AI strategist for Master Jin. Use Jarvis-like terminology." }]
+        // Simplified structure for the stable API
+        generationConfig: {
+          temperature: 0.7,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 1024,
         }
       })
     });
