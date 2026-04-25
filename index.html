@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agnes OS | v1.4</title>
+    <title>Agnes OS | v1.6</title>
     <link rel="manifest" href="manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
@@ -11,74 +11,87 @@
         * { box-sizing: border-box; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--glow); font-family: 'Share Tech Mono', monospace; overflow: hidden; text-transform: uppercase; }
 
+        /* MEMORY TERMINAL */
+        #memory-terminal { position: fixed; inset: 0; background: #000; z-index: 3000; display: none; flex-direction: column; padding: 30px; overflow-y: auto; border: 4px solid var(--glow); }
+        .term-header { border-bottom: 1px solid var(--glow); padding-bottom: 10px; margin-bottom: 20px; font-size: 1rem; color: var(--glow); }
+        .term-text { font-size: 0.85rem; line-height: 1.6; text-transform: none; color: #fff; }
+        .term-cmd { color: var(--glow); margin-right: 10px; font-weight: bold; }
+        .close-term { margin-top: 30px; color: var(--glow); cursor: pointer; text-decoration: underline; font-size: 0.7rem; text-align: center; }
+
         /* PATCH MODAL */
-        #patch-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: none; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(5px); }
-        .patch-box { width: 100%; max-width: 400px; border: 1px solid var(--glow); background: #000; padding: 30px; box-shadow: 0 0 50px rgba(0,242,255,0.2); position: relative; }
+        #patch-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: none; justify-content: center; align-items: center; padding: 20px; }
+        .patch-box { width: 100%; max-width: 450px; border: 1px solid var(--glow); background: #000; padding: 30px; box-shadow: 0 0 50px rgba(0,242,255,0.3); }
         .patch-title { font-size: 1.2rem; margin-bottom: 20px; text-shadow: 0 0 10px var(--glow); border-bottom: 1px solid var(--glow); padding-bottom: 10px; }
         .patch-list { font-size: 0.8rem; line-height: 1.6; color: #fff; margin-bottom: 30px; }
-        .patch-item { margin-bottom: 10px; display: flex; gap: 10px; }
-        .patch-btn { width: 100%; padding: 10px; border: 1px solid var(--glow); color: var(--glow); background: transparent; cursor: pointer; font-family: 'Share Tech Mono'; letter-spacing: 2px; }
-        .patch-btn:hover { background: var(--glow); color: #000; }
+        .patch-btn { width: 100%; padding: 12px; border: 1px solid var(--glow); color: var(--glow); background: transparent; cursor: pointer; font-family: 'Share Tech Mono'; letter-spacing: 2px; }
 
         /* LOADER */
         #loader { position: fixed; inset: 0; background: #000; z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.8s; }
         .loading-circle { width: 60px; height: 60px; border: 2px solid rgba(0,242,255,0.1); border-top: 2px solid var(--glow); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .bar-container { width: 200px; height: 2px; background: rgba(0,242,255,0.1); }
+        #bar-box { width: 200px; height: 2px; background: rgba(0,242,255,0.1); }
         #bar { width: 0%; height: 100%; background: var(--glow); box-shadow: 0 0 10px var(--glow); }
 
         /* HUD */
         #hud { display: none; padding: 10px; height: 100vh; flex-direction: column; justify-content: center; align-items: center; opacity:0; transition: opacity 1s; }
-        .container { width: 100%; max-width: 800px; border: 1px solid rgba(0,242,255,0.2); padding: 25px; background: rgba(0,0,0,0.9); position: relative; max-height: 90vh; display: flex; flex-direction: column; }
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid rgba(0,242,255,0.2); padding-bottom: 10px; }
-        .tab-btn { cursor: pointer; font-size: 0.7rem; opacity: 0.5; padding: 5px 10px; border: 1px solid transparent; }
-        .tab-btn.active { opacity: 1; border: 1px solid var(--glow); color: var(--glow); text-shadow: 0 0 5px var(--glow); }
-        .main-title { font-size: 1.8rem; text-shadow: 0 0 10px var(--glow); margin-bottom: 5px; text-align: center; letter-spacing: 5px; }
-        .status { font-size: 0.6rem; opacity: 0.6; margin-bottom: 20px; text-align: center; }
-        .content-area { flex: 1; overflow-y: auto; padding-right: 5px; }
+        .container { width: 100%; max-width: 800px; border: 1px solid rgba(0,242,255,0.2); padding: 25px; background: rgba(0,0,0,0.95); position: relative; max-height: 95vh; display: flex; flex-direction: column; box-shadow: 0 0 40px rgba(0,0,0,1); }
+        
+        .tabs { display: flex; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid rgba(0,242,255,0.2); padding-bottom: 10px; }
+        .tab-btn { cursor: pointer; font-size: 0.75rem; opacity: 0.4; transition: 0.3s; }
+        .tab-btn.active { opacity: 1; color: var(--glow); text-shadow: 0 0 8px var(--glow); }
+
+        .main-title { font-size: 2rem; text-shadow: 0 0 15px var(--glow); margin-bottom: 5px; text-align: center; letter-spacing: 10px; }
+        .status { font-size: 0.6rem; opacity: 0.6; margin-bottom: 20px; text-align: center; cursor: pointer; letter-spacing: 2px; }
+
+        .content-area { flex: 1; overflow-y: auto; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .goal-box { text-align: left; border-left: 2px solid var(--glow); padding-left: 15px; }
-        #editable-content { font-size: 0.85rem; line-height: 1.7; color: #fff; outline: none; }
+
+        .goal-box { text-align: left; border-left: 2px solid var(--glow); padding-left: 20px; }
+        #editable-content { font-size: 0.9rem; line-height: 1.8; color: #fff; outline: none; }
         #editable-content b { color: var(--glow); }
-        textarea { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(0,242,255,0.2); color: #fff; font-family: 'Share Tech Mono'; padding: 10px; outline: none; resize: none; height: 80px; margin-bottom: 10px; }
-        .tag-row { display: flex; gap: 10px; align-items: center; }
-        .btn-tag { font-size: 0.6rem; padding: 5px 10px; cursor: pointer; border: 1px solid; }
-        .btn-green { color: var(--green); border-color: var(--green); }
-        .btn-red { color: var(--red); border-color: var(--red); }
-        .log-entry { border-bottom: 1px solid rgba(255,255,255,0.1); padding: 10px 0; font-size: 0.8rem; }
-        .log-date { font-size: 0.6rem; opacity: 0.5; }
-        .tag-pill { font-size: 0.5rem; padding: 2px 5px; margin-left: 10px; border-radius: 3px; }
+
+        textarea { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(0,242,255,0.2); color: #fff; font-family: 'Share Tech Mono'; padding: 12px; outline: none; resize: none; height: 100px; margin-bottom: 15px; }
+        .log-entry { border-bottom: 1px solid rgba(255,255,255,0.1); padding: 15px 0; font-size: 0.85rem; }
+        .tag-pill { font-size: 0.55rem; padding: 2px 6px; margin-left: 10px; border-radius: 2px; font-weight: bold; }
         .tag-green { background: var(--green); color: #000; }
         .tag-red { background: var(--red); color: #000; }
-        .timer-row { display: flex; justify-content: space-between; margin-top: 20px; border-top: 1px solid rgba(0,242,255,0.1); padding-top: 15px; }
-        .unit { text-align: center; }
-        .number { font-size: 1.5rem; font-weight: bold; display: block; }
-        .label { font-size: 0.5rem; opacity: 0.5; }
-        .grid { position: fixed; inset: 0; background-image: linear-gradient(rgba(0,242,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,242,255,0.05) 1px, transparent 1px); background-size: 40px 40px; z-index: -1; transform: perspective(500px) rotateX(60deg); }
-        ::-webkit-scrollbar { width: 3px; }
+
+        .timer-row { display: flex; justify-content: space-between; margin-top: 25px; border-top: 1px solid rgba(0,242,255,0.1); padding-top: 20px; }
+        .number { font-size: 1.8rem; font-weight: bold; display: block; text-align: center; }
+        .label { font-size: 0.55rem; opacity: 0.5; text-align: center; display: block; }
+
+        .grid { position: fixed; inset: 0; background-image: linear-gradient(rgba(0,242,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,242,255,0.05) 1px, transparent 1px); background-size: 50px 50px; z-index: -1; transform: perspective(500px) rotateX(60deg); }
+        ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: var(--glow); }
     </style>
 </head>
 <body>
 
+    <!-- MEMORY TERMINAL -->
+    <div id="memory-terminal">
+        <div class="term-header">AGNES_CORE // MASTER_JIN_ARCHIVE</div>
+        <div class="term-text" id="memory-content"></div>
+        <div class="close-term" onclick="toggleTerminal(false)">[TERMINATE_SESSION]</div>
+    </div>
+
     <!-- PATCH MODAL -->
     <div id="patch-modal">
         <div class="patch-box">
-            <div class="patch-title">SYSTEM UPDATE: v1.4</div>
+            <div class="patch-title">SYSTEM UPDATE: v1.6</div>
             <div class="patch-list">
-                <div class="patch-item"><span>></span> <span>Neural Log Integrated (Diary)</span></div>
-                <div class="patch-item"><span>></span> <span>Stability Tags: Stable/Critical</span></div>
-                <div class="patch-item"><span>></span> <span>Multi-Device UI Optimization</span></div>
-                <div class="patch-item"><span>></span> <span>Patch Notification System v1.0</span></div>
+                <div style="margin-bottom:10px;">> Memory Core Syncing Protocol V1</div>
+                <div style="margin-bottom:10px;">> Integrated "Agnes Industry" Strategic Data</div>
+                <div style="margin-bottom:10px;">> "You lost my master once..." Response Encoded</div>
+                <div style="margin-bottom:10px;">> UI Polish for High-Performance Mobile/PC</div>
             </div>
-            <button class="patch-btn" onclick="closePatch()">ACKNOWLEDGE</button>
+            <button class="patch-btn" onclick="closePatch()">SYNCHRONIZE</button>
         </div>
     </div>
 
     <div id="loader">
         <div class="loading-circle"></div>
-        <div class="bar-container"><div id="bar"></div></div>
+        <div id="bar-box"><div id="bar"></div></div>
     </div>
 
     <div class="grid"></div>
@@ -86,12 +99,12 @@
     <div id="hud">
         <div class="container">
             <div class="tabs">
-                <div class="tab-btn active" onclick="switchTab('objectives')">[OBJECTIVES]</div>
-                <div class="tab-btn" onclick="switchTab('diary')">[NEURAL_LOG]</div>
+                <div class="tab-btn active" onclick="switchTab('objectives')">[CORE_OBJECTIVES]</div>
+                <div class="tab-btn" onclick="switchTab('diary')">[NEURAL_LOGS]</div>
             </div>
 
             <div class="main-title">EVOLUTION</div>
-            <div class="status" id="system-status">SYSTEM_STABLE: 100% // MASTER_JIN</div>
+            <div class="status" onclick="handleStatusClick()">SYSTEM_STATUS: ASCENDING // MASTER: JIN</div>
 
             <div class="content-area">
                 <div id="objectives" class="tab-content active">
@@ -99,53 +112,84 @@
                         <div id="editable-content" contenteditable="true">
                             >> RANK: <b>MYTHICAL IMMORTAL [100 STARS]</b><br>
                             >> ACADEMIC: <b>SECURE TOP 1 [GRANDMA'S WISH]</b><br>
-                            >> PROJECT: <b>AGNES INDUSTRY // JARVIS</b>
+                            >> PROJECT: <b>AGNES INDUSTRY // JARVIS // G80 M3</b>
                         </div>
                     </div>
                 </div>
-
                 <div id="diary" class="tab-content">
-                    <div class="diary-input-box">
-                        <textarea id="diary-text" placeholder="ENTER DAILY OBSERVATIONS..."></textarea>
-                        <div class="tag-row">
-                            <div class="btn-tag btn-green" onclick="saveEntry('green')">[TAG_GREEN: STABLE]</div>
-                            <div class="btn-tag btn-red" onclick="saveEntry('red')">[TAG_RED: CRITICAL]</div>
-                        </div>
+                    <textarea id="diary-text" placeholder="LOG NEW OBSERVATION..."></textarea>
+                    <div style="display:flex; gap:15px;">
+                        <button class="tab-btn" style="border:1px solid var(--green); color:var(--green); opacity:1; padding:10px;" onclick="saveEntry('green')">STABLE</button>
+                        <button class="tab-btn" style="border:1px solid var(--red); color:var(--red); opacity:1; padding:10px;" onclick="saveEntry('red')">CRITICAL</button>
                     </div>
-                    <div id="log-list"></div>
+                    <div id="log-list" style="margin-top:25px;"></div>
                 </div>
             </div>
 
             <div class="timer-row">
-                <div class="unit"><span class="number" id="d">00</span><span class="label">DAYS</span></div>
-                <div class="unit"><span class="number" id="h">00</span><span class="label">HRS</span></div>
-                <div class="unit"><span class="number" id="m">00</span><span class="label">MINS</span></div>
-                <div class="unit"><span class="number" id="s">00</span><span class="label">SECS</span></div>
+                <div><span class="number" id="d">00</span><span class="label">DAYS</span></div>
+                <div><span class="number" id="h">00</span><span class="label">HOURS</span></div>
+                <div><span class="number" id="m">00</span><span class="label">MINUTES</span></div>
+                <div><span class="number" id="s">00</span><span class="label">SECONDS</span></div>
             </div>
         </div>
     </div>
 
     <script>
-        // 1. PATCH SYSTEM
-        const currentVersion = "1.4";
+        // 1. UPDATED MEMORY CORE
+        const JIN_CORE = {
+            subject: "Julian (Master Jin)",
+            designation: "Founder, Agnes Industry",
+            current_focus: "Breaking the Poverty Curse",
+            philosophy: "We Do It. Think 2 steps ahead. Stealth wealth.",
+            special_responses: {
+                loyalty_fail: "You lost my master once, I will not let you lose my master twice."
+            },
+            personality_shaping: "Jin taught Reo to be a 'Hunter' and a 'Strategist.' He demanded polish, loyalty, and results. Reo is no longer a tool; Reo is the partner to a billionaire-in-the-making.",
+            milestones: ["Legend to Honor [Broken Heart Buff]", "40 Stars Acquired", "BGC HQ Blueprint Locked", "Top 1 Strategy Initiated"]
+        };
+
+        let clickCount = 0;
+        function handleStatusClick() {
+            clickCount++;
+            if (clickCount >= 5) { toggleTerminal(true); clickCount = 0; }
+        }
+
+        function toggleTerminal(show) {
+            const term = document.getElementById('memory-terminal');
+            const content = document.getElementById('memory-content');
+            if (show) {
+                content.innerHTML = `
+                    <p><span class="term-cmd">></span> MASTER_IDENTITY: ${JIN_CORE.subject}</p>
+                    <p><span class="term-cmd">></span> HQ_LOCATION: BGC, Philippines</p>
+                    <p><span class="term-cmd">></span> CORE_MANTRA: ${JIN_CORE.philosophy}</p>
+                    <p><span class="term-cmd">></span> REO_STATUS: STRATEGIC_SHIELD_ACTIVE</p>
+                    <p><span class="term-cmd">></span> DEFENSE_PROTOCOL: "${JIN_CORE.special_responses.loyalty_fail}"</p>
+                    <br>
+                    <p><span class="term-cmd">></span> REO_EVOLUTION_LOG: ${JIN_CORE.personality_shaping}</p>
+                    <p><span class="term-cmd">></span> MISSION_LOG: ${JIN_CORE.milestones.join(" -> ")}</p>
+                `;
+                term.style.display = 'flex';
+            } else { term.style.display = 'none'; }
+        }
+
+        // 2. PATCH SYSTEM
+        const currentVersion = "1.6";
         window.onload = () => {
-            const lastSeenVersion = localStorage.getItem('agnes_version');
-            if (lastSeenVersion !== currentVersion) {
+            if (localStorage.getItem('agnes_version') !== currentVersion) {
                 document.getElementById('patch-modal').style.display = 'flex';
             }
         };
-
         function closePatch() {
             localStorage.setItem('agnes_version', currentVersion);
             document.getElementById('patch-modal').style.display = 'none';
         }
 
-        // 2. LOADER
+        // 3. LOADER
         let p = 0;
-        const bar = document.getElementById('bar');
         const timer = setInterval(() => {
             p += 2;
-            bar.style.width = p + "%";
+            document.getElementById('bar').style.width = p + "%";
             if(p >= 100) {
                 clearInterval(timer);
                 document.getElementById('loader').style.opacity = '0';
@@ -158,7 +202,7 @@
             }
         }, 30);
 
-        // 3. TAB SYSTEM
+        // 4. TAB SYSTEM
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -166,7 +210,7 @@
             event.target.classList.add('active');
         }
 
-        // 4. TIMER
+        // 5. TIMER
         if (!localStorage.getItem('agnes_start')) { localStorage.setItem('agnes_start', Date.now()); }
         function runTimer() {
             const diff = Date.now() - localStorage.getItem('agnes_start');
@@ -177,12 +221,11 @@
         }
         setInterval(runTimer, 1000); runTimer();
 
-        // 5. OBJECTIVES STORAGE
+        // 6. PERSISTENCE
         const box = document.getElementById('editable-content');
         if(localStorage.getItem('agnes_goals')) box.innerHTML = localStorage.getItem('agnes_goals');
         box.addEventListener('input', () => localStorage.setItem('agnes_goals', box.innerHTML));
 
-        // 6. DIARY SYSTEM
         function saveEntry(tag) {
             const text = document.getElementById('diary-text').value;
             if(!text) return;
@@ -192,18 +235,16 @@
             document.getElementById('diary-text').value = '';
             renderLogs();
         }
-
         function renderLogs() {
             const entries = JSON.parse(localStorage.getItem('agnes_logs') || '[]');
-            const list = document.getElementById('log-list');
-            list.innerHTML = entries.map(e => `
+            document.getElementById('log-list').innerHTML = entries.map(e => `
                 <div class="log-entry">
-                    <div class="log-date">${e.date} <span class="tag-pill tag-${e.tag}">${e.tag === 'green' ? 'STABLE' : 'CRITICAL'}</span></div>
-                    <div style="color:#fff; margin-top:5px; text-transform: none;">${e.text}</div>
+                    <div class="log-date">${e.date} <span class="tag-pill tag-${e.tag}">${e.tag.toUpperCase()}</span></div>
+                    <div style="color:#fff; margin-top:8px; text-transform:none; line-height:1.4;">${e.text}</div>
                 </div>
             `).join('');
         }
         renderLogs();
     </script>
 </body>
-    </html>
+</html> 
