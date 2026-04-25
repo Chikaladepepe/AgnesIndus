@@ -3,49 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agnes OS</title>
+    <title>Agnes OS | v1.4</title>
     <link rel="manifest" href="manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
-        :root { --glow: #00f2ff; --bg: #050505; }
+        :root { --glow: #00f2ff; --bg: #050505; --red: #ff4d4d; --green: #4dff88; }
+        * { box-sizing: border-box; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--glow); font-family: 'Share Tech Mono', monospace; overflow: hidden; text-transform: uppercase; }
+
+        /* PATCH MODAL */
+        #patch-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: none; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(5px); }
+        .patch-box { width: 100%; max-width: 400px; border: 1px solid var(--glow); background: #000; padding: 30px; box-shadow: 0 0 50px rgba(0,242,255,0.2); position: relative; }
+        .patch-title { font-size: 1.2rem; margin-bottom: 20px; text-shadow: 0 0 10px var(--glow); border-bottom: 1px solid var(--glow); padding-bottom: 10px; }
+        .patch-list { font-size: 0.8rem; line-height: 1.6; color: #fff; margin-bottom: 30px; }
+        .patch-item { margin-bottom: 10px; display: flex; gap: 10px; }
+        .patch-btn { width: 100%; padding: 10px; border: 1px solid var(--glow); color: var(--glow); background: transparent; cursor: pointer; font-family: 'Share Tech Mono'; letter-spacing: 2px; }
+        .patch-btn:hover { background: var(--glow); color: #000; }
 
         /* LOADER */
         #loader { position: fixed; inset: 0; background: #000; z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.8s; }
         .loading-circle { width: 60px; height: 60px; border: 2px solid rgba(0,242,255,0.1); border-top: 2px solid var(--glow); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        #load-msg { font-size: 0.7rem; letter-spacing: 2px; margin-bottom: 10px; text-align: center; }
         .bar-container { width: 200px; height: 2px; background: rgba(0,242,255,0.1); }
         #bar { width: 0%; height: 100%; background: var(--glow); box-shadow: 0 0 10px var(--glow); }
 
         /* HUD */
-        #hud { display: none; padding: 20px; box-sizing: border-box; height: 100vh; flex-direction: column; justify-content: center; align-items: center; opacity: 0; transition: opacity 1s; }
-        .container { width: 100%; max-width: 500px; border: 1px solid rgba(0,242,255,0.2); padding: 35px 25px; background: rgba(0,0,0,0.9); position: relative; }
-        .main-title { font-size: 2rem; text-shadow: 0 0 10px var(--glow); margin-bottom: 5px; text-align: center; letter-spacing: 8px; }
-        .status { font-size: 0.6rem; opacity: 0.6; margin-bottom: 25px; border-bottom: 1px solid rgba(0,242,255,0.2); padding-bottom: 10px; text-align: center; }
-
-        /* GOALS */
-        .goal-box { text-align: left; margin-bottom: 30px; border-left: 2px solid var(--glow); padding-left: 15px; }
+        #hud { display: none; padding: 10px; height: 100vh; flex-direction: column; justify-content: center; align-items: center; opacity:0; transition: opacity 1s; }
+        .container { width: 100%; max-width: 800px; border: 1px solid rgba(0,242,255,0.2); padding: 25px; background: rgba(0,0,0,0.9); position: relative; max-height: 90vh; display: flex; flex-direction: column; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid rgba(0,242,255,0.2); padding-bottom: 10px; }
+        .tab-btn { cursor: pointer; font-size: 0.7rem; opacity: 0.5; padding: 5px 10px; border: 1px solid transparent; }
+        .tab-btn.active { opacity: 1; border: 1px solid var(--glow); color: var(--glow); text-shadow: 0 0 5px var(--glow); }
+        .main-title { font-size: 1.8rem; text-shadow: 0 0 10px var(--glow); margin-bottom: 5px; text-align: center; letter-spacing: 5px; }
+        .status { font-size: 0.6rem; opacity: 0.6; margin-bottom: 20px; text-align: center; }
+        .content-area { flex: 1; overflow-y: auto; padding-right: 5px; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .goal-box { text-align: left; border-left: 2px solid var(--glow); padding-left: 15px; }
         #editable-content { font-size: 0.85rem; line-height: 1.7; color: #fff; outline: none; }
         #editable-content b { color: var(--glow); }
-
-        /* TIMER */
-        .timer-row { display: flex; justify-content: space-between; margin-bottom: 10px; border-top: 1px solid rgba(0,242,255,0.1); padding-top: 20px; }
+        textarea { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(0,242,255,0.2); color: #fff; font-family: 'Share Tech Mono'; padding: 10px; outline: none; resize: none; height: 80px; margin-bottom: 10px; }
+        .tag-row { display: flex; gap: 10px; align-items: center; }
+        .btn-tag { font-size: 0.6rem; padding: 5px 10px; cursor: pointer; border: 1px solid; }
+        .btn-green { color: var(--green); border-color: var(--green); }
+        .btn-red { color: var(--red); border-color: var(--red); }
+        .log-entry { border-bottom: 1px solid rgba(255,255,255,0.1); padding: 10px 0; font-size: 0.8rem; }
+        .log-date { font-size: 0.6rem; opacity: 0.5; }
+        .tag-pill { font-size: 0.5rem; padding: 2px 5px; margin-left: 10px; border-radius: 3px; }
+        .tag-green { background: var(--green); color: #000; }
+        .tag-red { background: var(--red); color: #000; }
+        .timer-row { display: flex; justify-content: space-between; margin-top: 20px; border-top: 1px solid rgba(0,242,255,0.1); padding-top: 15px; }
         .unit { text-align: center; }
-        .number { font-size: 1.8rem; font-weight: bold; display: block; }
+        .number { font-size: 1.5rem; font-weight: bold; display: block; }
         .label { font-size: 0.5rem; opacity: 0.5; }
-
-        /* GRID */
         .grid { position: fixed; inset: 0; background-image: linear-gradient(rgba(0,242,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,242,255,0.05) 1px, transparent 1px); background-size: 40px 40px; z-index: -1; transform: perspective(500px) rotateX(60deg); }
-
-        .footer { font-size: 0.5rem; opacity: 0.3; width: 100%; display: flex; justify-content: space-between; margin-top: 20px; }
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-thumb { background: var(--glow); }
     </style>
 </head>
 <body>
 
+    <!-- PATCH MODAL -->
+    <div id="patch-modal">
+        <div class="patch-box">
+            <div class="patch-title">SYSTEM UPDATE: v1.4</div>
+            <div class="patch-list">
+                <div class="patch-item"><span>></span> <span>Neural Log Integrated (Diary)</span></div>
+                <div class="patch-item"><span>></span> <span>Stability Tags: Stable/Critical</span></div>
+                <div class="patch-item"><span>></span> <span>Multi-Device UI Optimization</span></div>
+                <div class="patch-item"><span>></span> <span>Patch Notification System v1.0</span></div>
+            </div>
+            <button class="patch-btn" onclick="closePatch()">ACKNOWLEDGE</button>
+        </div>
+    </div>
+
     <div id="loader">
         <div class="loading-circle"></div>
-        <div id="load-msg">SYSTEM BOOTING...</div>
         <div class="bar-container"><div id="bar"></div></div>
     </div>
 
@@ -53,14 +85,34 @@
 
     <div id="hud">
         <div class="container">
-            <div class="main-title">EVOLUTION</div>
-            <div class="status">AGNES OS // MASTER_DEVELOPER: JIN</div>
+            <div class="tabs">
+                <div class="tab-btn active" onclick="switchTab('objectives')">[OBJECTIVES]</div>
+                <div class="tab-btn" onclick="switchTab('diary')">[NEURAL_LOG]</div>
+            </div>
 
-            <div class="goal-box">
-                <div id="editable-content" contenteditable="true">
-                    >> RANK: <b>MYTHICAL IMMORTAL [100 STARS]</b><br>
-                    >> ACADEMIC: <b>SECURE TOP 1 [GRANDMA'S WISH]</b><br>
-                    >> PROJECT: <b>AGNES INDUSTRY // JARVIS</b>
+            <div class="main-title">EVOLUTION</div>
+            <div class="status" id="system-status">SYSTEM_STABLE: 100% // MASTER_JIN</div>
+
+            <div class="content-area">
+                <div id="objectives" class="tab-content active">
+                    <div class="goal-box">
+                        <div id="editable-content" contenteditable="true">
+                            >> RANK: <b>MYTHICAL IMMORTAL [100 STARS]</b><br>
+                            >> ACADEMIC: <b>SECURE TOP 1 [GRANDMA'S WISH]</b><br>
+                            >> PROJECT: <b>AGNES INDUSTRY // JARVIS</b>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="diary" class="tab-content">
+                    <div class="diary-input-box">
+                        <textarea id="diary-text" placeholder="ENTER DAILY OBSERVATIONS..."></textarea>
+                        <div class="tag-row">
+                            <div class="btn-tag btn-green" onclick="saveEntry('green')">[TAG_GREEN: STABLE]</div>
+                            <div class="btn-tag btn-red" onclick="saveEntry('red')">[TAG_RED: CRITICAL]</div>
+                        </div>
+                    </div>
+                    <div id="log-list"></div>
                 </div>
             </div>
 
@@ -70,25 +122,30 @@
                 <div class="unit"><span class="number" id="m">00</span><span class="label">MINS</span></div>
                 <div class="unit"><span class="number" id="s">00</span><span class="label">SECS</span></div>
             </div>
-
-            <div class="footer">
-                <span onclick="localStorage.clear(); location.reload();">[RESET_OS]</span>
-                <span>BGC_SECURE_LINK</span>
-            </div>
         </div>
     </div>
 
     <script>
-        // 1. SIMPLE LOADER (NO BUGS)
-        const msgs = ["SYNCING DATA...", "JARVIS PROTOTYPE...", "LIFE MIGHT BE STORMY...", "IT CAN'T RAIN FOREVER...", "AGNES INDUSTRY CORE..."];
+        // 1. PATCH SYSTEM
+        const currentVersion = "1.4";
+        window.onload = () => {
+            const lastSeenVersion = localStorage.getItem('agnes_version');
+            if (lastSeenVersion !== currentVersion) {
+                document.getElementById('patch-modal').style.display = 'flex';
+            }
+        };
+
+        function closePatch() {
+            localStorage.setItem('agnes_version', currentVersion);
+            document.getElementById('patch-modal').style.display = 'none';
+        }
+
+        // 2. LOADER
         let p = 0;
         const bar = document.getElementById('bar');
-        const txt = document.getElementById('load-msg');
-
         const timer = setInterval(() => {
-            p += 1;
+            p += 2;
             bar.style.width = p + "%";
-            if(p % 20 === 0) txt.innerText = msgs[Math.floor(Math.random() * msgs.length)];
             if(p >= 100) {
                 clearInterval(timer);
                 document.getElementById('loader').style.opacity = '0';
@@ -101,36 +158,52 @@
             }
         }, 30);
 
-        // 2. TIMER (FIXED START BUG)
-        if (!localStorage.getItem('agnes_start')) {
-            localStorage.setItem('agnes_start', Date.now());
+        // 3. TAB SYSTEM
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
         }
 
+        // 4. TIMER
+        if (!localStorage.getItem('agnes_start')) { localStorage.setItem('agnes_start', Date.now()); }
         function runTimer() {
-            const start = localStorage.getItem('agnes_start');
-            const diff = Date.now() - start;
-
-            const days = Math.floor(diff / 86400000);
-            const hours = Math.floor((diff % 86400000) / 3600000);
-            const mins = Math.floor((diff % 3600000) / 60000);
-            const secs = Math.floor((diff % 60000) / 1000);
-
-            document.getElementById('d').innerText = days.toString().padStart(2, '0');
-            document.getElementById('h').innerText = hours.toString().padStart(2, '0');
-            document.getElementById('m').innerText = mins.toString().padStart(2, '0');
-            document.getElementById('s').innerText = secs.toString().padStart(2, '0');
+            const diff = Date.now() - localStorage.getItem('agnes_start');
+            document.getElementById('d').innerText = Math.floor(diff / 86400000).toString().padStart(2, '0');
+            document.getElementById('h').innerText = Math.floor((diff % 86400000) / 3600000).toString().padStart(2, '0');
+            document.getElementById('m').innerText = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
+            document.getElementById('s').innerText = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
         }
-        setInterval(runTimer, 1000);
-        runTimer();
+        setInterval(runTimer, 1000); runTimer();
 
-        // 3. EDITABLE GOALS
+        // 5. OBJECTIVES STORAGE
         const box = document.getElementById('editable-content');
-        if(localStorage.getItem('agnes_goals')) {
-            box.innerHTML = localStorage.getItem('agnes_goals');
+        if(localStorage.getItem('agnes_goals')) box.innerHTML = localStorage.getItem('agnes_goals');
+        box.addEventListener('input', () => localStorage.setItem('agnes_goals', box.innerHTML));
+
+        // 6. DIARY SYSTEM
+        function saveEntry(tag) {
+            const text = document.getElementById('diary-text').value;
+            if(!text) return;
+            const entries = JSON.parse(localStorage.getItem('agnes_logs') || '[]');
+            entries.unshift({ text, tag, date: new Date().toLocaleString() });
+            localStorage.setItem('agnes_logs', JSON.stringify(entries));
+            document.getElementById('diary-text').value = '';
+            renderLogs();
         }
-        box.addEventListener('input', () => {
-            localStorage.setItem('agnes_goals', box.innerHTML);
-        });
+
+        function renderLogs() {
+            const entries = JSON.parse(localStorage.getItem('agnes_logs') || '[]');
+            const list = document.getElementById('log-list');
+            list.innerHTML = entries.map(e => `
+                <div class="log-entry">
+                    <div class="log-date">${e.date} <span class="tag-pill tag-${e.tag}">${e.tag === 'green' ? 'STABLE' : 'CRITICAL'}</span></div>
+                    <div style="color:#fff; margin-top:5px; text-transform: none;">${e.text}</div>
+                </div>
+            `).join('');
+        }
+        renderLogs();
     </script>
 </body>
-</html>
+    </html>
