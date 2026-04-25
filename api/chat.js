@@ -3,12 +3,12 @@ export default async function handler(req, res) {
   const { message, history } = req.body;
 
   if (!API_KEY) {
-    return res.status(500).json({ reply: "REO_BRIDGE: API_KEY_NOT_FOUND." });
+    return res.status(500).json({ reply: "REO_BRIDGE_ERROR: API_KEY_NOT_INJECTED." });
   }
 
   try {
-    // The most standard, direct URL possible
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+    // Using the absolute stable v1 endpoint and 1.5-flash
+    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
 
     const response = await fetch(url, {
       method: 'POST',
@@ -16,23 +16,16 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         contents: [
           ...history, 
-          { role: "user", parts: [{ text: `SYSTEM: You are REO. USER: ${message}` }] }
+          { role: "user", parts: [{ text: `SYSTEM: You are REO, Master Jin's AI. Be concise. USER: ${message}` }] }
         ]
       })
     });
 
     const data = await response.json();
 
-    if (response.ok) {
+    if (response.ok && data.candidates && data.candidates[0].content) {
       const reply = data.candidates[0].content.parts[0].text;
       return res.status(200).json({ reply });
     } else {
-      // THIS WILL PRINT THE RAW GOOGLE ERROR IN THE CHAT
-      const errorDetail = data.error ? `${data.error.message} (Status: ${data.error.status})` : "UNKNOWN_GATEWAY_ERROR";
-      return res.status(response.status).json({ reply: `DIAGNOSTIC_FAILURE: ${errorDetail}` });
-    }
-
-  } catch (error) {
-    res.status(500).json({ reply: "REO_UPLINK: PHYSICAL_BRIDGE_ERROR." });
-  }
-}
+      // Print the raw error if it fails
+      const rawError = JSON.stringify(data.error || data); 
