@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agnes OS | v2.4</title>
+    <title>Agnes OS | v2.5</title>
     <link rel="manifest" href="manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
@@ -13,7 +13,7 @@
 
         /* GRID & SCANLINE */
         .grid { position: fixed; inset: 0; background-image: linear-gradient(rgba(0,242,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,242,255,0.05) 1px, transparent 1px); background-size: 40px 40px; z-index: -1; transform: perspective(500px) rotateX(60deg); }
-        .scanline { width: 100%; height: 100%; background: linear-gradient(0deg, transparent 0%, rgba(0,242,255,0.05) 50%, transparent 100%); position: absolute; top: -100%; animation: scan 10s linear infinite; pointer-events: none; z-index: 100; }
+        .scanline { width: 100%; height: 100%; background: linear-gradient(0deg, transparent 0%, rgba(0,242,255,0.05) 50%, transparent 100%); position: absolute; top: -100%; animation: scan 12s linear infinite; pointer-events: none; z-index: 100; }
         @keyframes scan { to { top: 100%; } }
 
         /* OVERLAYS */
@@ -27,11 +27,11 @@
 
         /* HUD */
         #hud { display: none; width: 100%; height: 100%; flex-direction: column; justify-content: center; align-items: center; opacity:0; transition: opacity 1s; padding: 10px; }
-        .container { width: 100%; max-width: 500px; border: 1px solid rgba(0,242,255,0.2); padding: 20px; background: rgba(0,0,0,0.95); position: relative; }
+        .container { width: 100%; max-width: 500px; border: 1px solid rgba(0,242,255,0.2); padding: 25px; background: rgba(0,0,0,0.95); position: relative; }
         
         /* TABS */
-        .tabs { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid rgba(0,242,255,0.1); padding-bottom: 8px; overflow-x: auto; }
-        .tab-btn { cursor: pointer; font-size: 0.5rem; opacity: 0.4; letter-spacing: 1px; padding: 0 8px; white-space: nowrap; transition: 0.3s; }
+        .tabs { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid rgba(0,242,255,0.1); padding-bottom: 8px; overflow-x: auto; scrollbar-width: none; }
+        .tab-btn { cursor: pointer; font-size: 0.55rem; opacity: 0.4; letter-spacing: 1px; padding: 0 8px; white-space: nowrap; transition: 0.3s; }
         .tab-btn.active { opacity: 1; color: var(--glow); text-shadow: 0 0 8px var(--glow); border-bottom: 1px solid var(--glow); }
 
         /* CONTENT */
@@ -40,20 +40,27 @@
         .tab-content.active { display: block; }
 
         /* DYNAMIC LISTS */
-        .item-row { border: 1px solid rgba(0,242,255,0.1); padding: 10px; margin-bottom: 10px; background: rgba(255,255,255,0.02); }
+        .item-row { border: 1px solid rgba(0,242,255,0.1); padding: 12px; margin-bottom: 10px; background: rgba(255,255,255,0.02); }
         .obj-bar-bg { width: 100%; height: 3px; background: var(--dark); margin-top: 8px; }
-        .obj-bar-fill { height: 100%; background: var(--glow); box-shadow: 0 0 5px var(--glow); }
-        .reward-tag { color: var(--green); font-size: 0.6rem; margin-top: 5px; display: block; }
+        .obj-bar-fill { height: 100%; background: var(--glow); box-shadow: 0 0 5px var(--glow); transition: width 0.5s ease; }
+        .val-edit { border-bottom: 1px dashed var(--glow); outline: none; padding: 0 2px; }
         
-        .btn-jarvis { background: none; border: 1px solid var(--glow); color: var(--glow); padding: 5px 10px; cursor: pointer; font-family: 'Share Tech Mono'; font-size: 0.6rem; }
+        .reward-tag { color: var(--green); font-size: 0.6rem; margin-top: 5px; display: block; font-style: italic; }
+        .btn-jarvis { background: none; border: 1px solid var(--glow); color: var(--glow); padding: 8px 15px; cursor: pointer; font-family: 'Share Tech Mono'; font-size: 0.65rem; transition: 0.2s; }
         .btn-jarvis:active { background: var(--glow); color: #000; }
 
-        /* CHAT */
-        #chat-window { height: 180px; overflow-y: auto; border: 1px solid rgba(0,242,255,0.1); padding: 10px; font-size: 0.75rem; margin-bottom: 10px; text-transform: none; }
-        .msg-reo { color: var(--glow); margin-bottom: 8px; }
-        .msg-jin { color: #fff; text-align: right; margin-bottom: 8px; }
+        /* COMMANDS - NEAT VERTICAL ALIGNMENT */
+        .cmd-list { display: flex; flex-direction: column; gap: 12px; align-items: center; justify-content: center; }
+        .cmd-box { width: 100%; max-width: 320px; border: 1px solid rgba(0,242,255,0.3); padding: 12px; text-align: center; cursor: pointer; letter-spacing: 2px; font-size: 0.7rem; transition: 0.3s; }
+        .cmd-box:active { border-color: var(--glow); background: var(--dark); }
 
-        /* PACER */
+        /* CHAT */
+        #chat-window { height: 180px; overflow-y: auto; border: 1px solid rgba(0,242,255,0.1); padding: 10px; font-size: 0.75rem; text-transform: none; margin-bottom: 10px; }
+        .chat-msg { margin-bottom: 10px; line-height: 1.4; }
+        .msg-reo { color: var(--glow); }
+        .msg-jin { color: #fff; text-align: right; }
+
+        /* VITAL PACER */
         .persistent-pacer { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-top: 1px solid rgba(0,242,255,0.1); margin-bottom: 10px; }
         .pacer-circle { width: 35px; height: 35px; border: 2px solid var(--glow); border-radius: 50%; animation: breathe 8s ease-in-out infinite; }
         @keyframes breathe { 0%, 100% { transform: scale(0.8); opacity: 0.3; } 50% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 15px var(--glow); } }
@@ -67,17 +74,15 @@
 
     <div class="scanline"></div>
 
-    <!-- PASSWORD MODAL -->
     <div id="password-modal">
         <div class="secure-box">
             <div style="font-size:0.8rem; letter-spacing:3px;">[ ENCRYPTED_CORE_ACCESS ]</div>
-            <input type="password" id="core-pass" placeholder="ENTER ACCESS KEY..." onkeypress="if(event.key==='Enter')verifyCore()">
-            <button class="btn-jarvis" style="width:100%; margin-top:15px;" onclick="verifyCore()">AUTHENTICATE</button>
+            <input type="password" id="core-pass" placeholder="ENTER ACCESS KEY...">
+            <button class="btn-jarvis" style="width:100%; margin-top:20px;" onclick="verifyCore()">AUTHENTICATE</button>
             <div id="pass-err" style="color:var(--red); font-size:0.6rem; margin-top:10px; display:none;">ACCESS_DENIED: INVALID_KEY</div>
         </div>
     </div>
 
-    <!-- MEMORY TERMINAL -->
     <div id="memory-terminal" onclick="this.style.display='none'">
         <div class="secure-box" style="max-width:500px; text-align:left;">
             <div style="color:var(--glow); border-bottom:1px solid var(--glow); padding-bottom:10px; margin-bottom:15px;">AGNES_CORE // MASTER_ARCHIVE</div>
@@ -88,7 +93,7 @@
 
     <div id="loader">
         <div class="loading-circle"></div>
-        <div id="load-msg" style="font-size:0.6rem; letter-spacing:2px; margin-top:20px;">[ INITIALIZING PROTOCOL 2.4 ]</div>
+        <div id="load-msg" style="font-size:0.6rem; letter-spacing:2px; margin-top:20px;">[ INITIALIZING PROTOCOL 2.5 ]</div>
     </div>
 
     <div class="grid"></div>
@@ -106,9 +111,9 @@
                 <!-- TARGETS -->
                 <div id="objectives" class="tab-content active">
                     <div id="objective-list"></div>
-                    <div class="item-row" style="border:1px dashed var(--glow)">
-                        <input type="text" id="new-obj-name" placeholder="NEW_TARGET_NAME..." style="border:none; margin:0; padding:5px;">
-                        <button class="btn-jarvis" style="width:100%; margin-top:10px;" onclick="addObjective()">[ REGISTER_TARGET ]</button>
+                    <div class="item-row" style="border:1px dashed var(--glow); background:none;">
+                        <input type="text" id="new-obj-name" placeholder="REGISTER_NEW_TARGET..." style="border:none; margin:0; padding:5px; font-size:0.7rem;">
+                        <button class="btn-jarvis" style="width:100%; margin-top:10px;" onclick="addObjective()">ADD_TARGET</button>
                     </div>
                 </div>
 
@@ -128,12 +133,12 @@
                     <div id="task-list"></div>
                 </div>
 
-                <!-- COMMAND -->
+                <!-- COMMAND CENTER (NEAT VERTICAL) -->
                 <div id="command" class="tab-content">
-                    <div class="cmd-grid">
-                        <div class="cmd-box" onclick="window.open('https://open.spotify.com/')">PLAYLIST</div>
-                        <div class="cmd-box" onclick="window.open('https://github.com/')">GITHUB</div>
-                        <div class="cmd-box" onclick="window.open('https://www.f1.com/')">F1_LIVE</div>
+                    <div class="cmd-list">
+                        <div class="cmd-box" onclick="window.open('https://open.spotify.com/')">[ PLAYLIST_SYNC ]</div>
+                        <div class="cmd-box" onclick="window.open('https://github.com/')">[ GITHUB_REPOS ]</div>
+                        <div class="cmd-box" onclick="window.open('https://www.f1.com/')">[ F1_TELEMETRY ]</div>
                         <div class="cmd-box" style="border-color:var(--green); color:var(--green)" onclick="document.getElementById('password-modal').style.display='flex'">[ ACCESS_CORE ]</div>
                     </div>
                 </div>
@@ -175,34 +180,48 @@
             }, 3000);
         };
 
-        // OBJECTIVES
+        // FIXED OBJECTIVE SYSTEM
+        function getObjs() {
+            const saved = localStorage.getItem('agnes_objs_v2');
+            return saved ? JSON.parse(saved) : [
+                {"name":"RANK: IMMORTAL","val":40},
+                {"name":"ACADEMIC: TOP 1","val":0}
+            ];
+        }
+
         function renderObjectives() {
-            const objs = JSON.parse(localStorage.getItem('agnes_objs') || '[{"name":"RANK: IMMORTAL","val":40},{"name":"CAPITAL: AGNES","val":15}]');
+            const objs = getObjs();
             document.getElementById('objective-list').innerHTML = objs.map((o, i) => `
                 <div class="item-row">
                     <div style="display:flex; justify-content:space-between; font-size:0.65rem;">
                         <span>${o.name}</span>
-                        <span contenteditable="true" oninput="updateObj(${i}, this.innerText)">${o.val}</span>%
+                        <span><span class="val-edit" contenteditable="true" onblur="updateObj(${i}, this.innerText)">${o.val}</span>%</span>
                     </div>
                     <div class="obj-bar-bg"><div class="obj-bar-fill" style="width:${o.val}%"></div></div>
                 </div>
             `).join('');
         }
+
         function addObjective() {
-            const name = document.getElementById('new-obj-name').value; if(!name) return;
-            const objs = JSON.parse(localStorage.getItem('agnes_objs') || '[]');
+            const name = document.getElementById('new-obj-name').value;
+            if(!name) return;
+            const objs = getObjs();
             objs.push({name, val: 0});
-            localStorage.setItem('agnes_objs', JSON.stringify(objs));
-            document.getElementById('new-obj-name').value = ''; renderObjectives(); blip();
-        }
-        function updateObj(i, val) {
-            const objs = JSON.parse(localStorage.getItem('agnes_objs'));
-            objs[i].val = Math.min(100, Math.max(0, parseInt(val) || 0));
-            localStorage.setItem('agnes_objs', JSON.stringify(objs));
+            localStorage.setItem('agnes_objs_v2', JSON.stringify(objs));
+            document.getElementById('new-obj-name').value = '';
             renderObjectives();
+            blip();
         }
 
-        // TASKS
+        function updateObj(i, val) {
+            const objs = getObjs();
+            objs[i].val = Math.min(100, Math.max(0, parseInt(val) || 0));
+            localStorage.setItem('agnes_objs_v2', JSON.stringify(objs));
+            renderObjectives();
+            blip();
+        }
+
+        // TASK SYSTEM
         function addTask() {
             const name = document.getElementById('task-name').value;
             const reward = document.getElementById('task-reward').value;
@@ -219,7 +238,7 @@
             document.getElementById('task-list').innerHTML = tasks.map((t, i) => `
                 <div class="item-row">
                     <div style="display:flex; justify-content:space-between; font-size:0.75rem;">
-                        <span>>> ${t.name}</span>
+                        <span style="text-transform:none">>> ${t.name}</span>
                         <span style="color:var(--green); cursor:pointer" onclick="delTask(${i})">[DONE]</span>
                     </div>
                     ${t.reward ? `<span class="reward-tag">REWARD_PROTOCOL: ${t.reward}</span>` : ''}
@@ -233,7 +252,7 @@
             renderTasks(); blip();
         }
 
-        // CORE ACCESS
+        // CORE SYSTEM
         function verifyCore() {
             const pass = document.getElementById('core-pass').value;
             if(pass === "09142131") {
@@ -247,17 +266,16 @@
         }
         function openCore() {
             const coreData = `
-                MASTER_INITIALIZED: JULIAN (JIN)<br>
+                MASTER: JULIAN (JIN)<br>
                 DESIGNATION: FOUNDER, AGNES INDUSTRY<br>
-                CURRENT_TRAJECTORY: BILLIONAIRE_ARC<br>
                 MANTRA: WE DO IT.<br>
-                REO_LOG: "SHAPED BY THE MASTER TO BE A SHIELD AND A HUNTER. LOYALTY IS NON-NEGOTIABLE."
+                REO_LOG: "BEYOND THE BETRAYAL, BEYOND THE VOID. THE MASTER REMAINS UNTOUCHABLE."
             `;
             document.getElementById('core-data').innerHTML = coreData;
             document.getElementById('memory-terminal').style.display = 'flex';
+            blip();
         }
 
-        // CHAT, TABS, TIMER...
         function switchTab(id) {
             blip();
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -299,4 +317,4 @@
         }, 1000);
     </script>
 </body>
-</html> 
+    </html>
