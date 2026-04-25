@@ -3,12 +3,12 @@ export default async function handler(req, res) {
   const { message, history } = req.body;
 
   if (!API_KEY) {
-    return res.status(500).json({ reply: "SYSTEM_ERROR: API_KEY_MISSING." });
+    return res.status(500).json({ reply: "SYSTEM_ERROR: API_KEY_NOT_FOUND." });
   }
 
   try {
-    // SWITCHED TO STABLE V1 URL
-    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+    // UNIVERSAL STABLE URL: Using gemini-pro for 100% compatibility
+    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${API_KEY}`;
 
     const response = await fetch(url, {
       method: 'POST',
@@ -16,7 +16,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         contents: [
           ...history, 
-          { role: "user", parts: [{ text: `SYSTEM_NOTE: You are REO, Master Jin's AI. Be concise and use Jarvis-like terminology. USER_MESSAGE: ${message}` }] }
+          { role: "user", parts: [{ text: `SYSTEM_DIRECTIVE: You are REO, Master Jin's AI strategist. Be concise, result-oriented, and use Jarvis-like terminology. USER_INPUT: ${message}` }] }
         ]
       })
     });
@@ -24,14 +24,14 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (data.error) {
-      // This will catch if the model name is still being rejected
-      return res.status(500).json({ reply: `V1_GATEWAY_ERROR: ${data.error.message}` });
+      return res.status(500).json({ reply: `CORE_GATEWAY_ERROR: ${data.error.message}` });
     }
 
+    // Extraction for the Pro model
     const reply = data.candidates[0].content.parts[0].text;
     res.status(200).json({ reply });
 
   } catch (error) {
-    res.status(500).json({ reply: "REO_UPLINK_TIMEOUT: CHECK_NETWORK_PROTOCOL." });
+    res.status(500).json({ reply: "REO_UPLINK_OFFLINE: BRIDGE_TIMEOUT." });
   }
-}
+} 
